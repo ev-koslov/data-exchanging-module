@@ -17,7 +17,6 @@ import java.util.Map;
 /**
  * Abstract class, which implementations are used to make communication beetwen client and server easier.
  *
- * @param <C> implementation of {@link AbstractConnection}
  * @param <E> implementation of {@link AbstractEndpoint}
  */
 public abstract class AbstractEndpointInterface<E extends AbstractEndpoint<?>> {
