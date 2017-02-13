@@ -3,7 +3,7 @@ package ev.koslov.data_exchanging.components;
 import java.io.*;
 
 
-class AbstractMessageBody implements Serializable {
+abstract class AbstractMessageBody implements Serializable {
 
     protected AbstractMessageBody() {
 

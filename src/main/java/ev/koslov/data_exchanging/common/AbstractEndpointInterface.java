@@ -1,6 +1,7 @@
 package ev.koslov.data_exchanging.common;
 
 
+import ev.koslov.data_exchanging.components.MessageFabric;
 import ev.koslov.data_exchanging.components.Request;
 import ev.koslov.data_exchanging.components.Message;
 import ev.koslov.data_exchanging.exceptions.DeniedException;
@@ -22,10 +23,12 @@ import java.util.Map;
 public abstract class AbstractEndpointInterface<C extends AbstractConnection, E extends AbstractEndpoint<C, ?>> {
     private E endpoint;
     private Map<Long, Request> requestsMap;
+    private MessageFabric messageFabric;
     private boolean readyForProcessing;
 
     protected AbstractEndpointInterface() {
         this.requestsMap = new HashMap<Long, Request>();
+        this.messageFabric = new MessageFabric();
     }
 
     /**
@@ -189,5 +192,9 @@ public abstract class AbstractEndpointInterface<C extends AbstractConnection, E 
         registerRequest(message);
         send(message);
         return waitResponse(message, timeout);
+    }
+
+    public final MessageFabric getMessageFabric() {
+        return messageFabric;
     }
 }
