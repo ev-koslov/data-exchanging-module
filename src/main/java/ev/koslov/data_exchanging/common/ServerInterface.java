@@ -7,7 +7,7 @@ import ev.koslov.data_exchanging.server.ServerConnection;
 import ev.koslov.data_exchanging.server.ServerEndpoint;
 
 
-public abstract class ServerInterface<C extends ServerConnection> extends AbstractEndpointInterface<C, ServerEndpoint<C, ?>> {
+public abstract class ServerInterface extends AbstractEndpointInterface<ServerEndpoint<?>> {
 
 
     @Override

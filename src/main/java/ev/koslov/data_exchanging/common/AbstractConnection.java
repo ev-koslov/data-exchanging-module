@@ -14,8 +14,6 @@ import java.util.LinkedList;
  * Implementations of this subclass are holding message parsing mechanism ({@link AbstractMessageParser}) and list that contains
  * byteBuffers of messages which needs to be sent using {@link AbstractDataExchanger}.
  * Implementations SHOULD NOT BE instantiated in separate of {@link AbstractEndpoint} implementations.
- * Instances are created implementations of {@link AbstractEndpoint}
- * using {@link AbstractEndpoint#instantiateConnection(Class, SelectionKey, AbstractMessageParser)}
  */
 public abstract class AbstractConnection {
     private SocketChannel channel;
@@ -31,13 +29,10 @@ public abstract class AbstractConnection {
     }
 
     /**
-     * Creates server connection instance. Used only by {@link AbstractEndpoint#instantiateConnection(Class, SelectionKey, AbstractMessageParser)}
-     * using reflection mechanism.
+     * Creates server connection instance.
      * @param selectionKey  selection key for newly created socketChannel
      * @param messageParser associated message parser
      */
-    //suppressing warning because of using this constructor in reflection
-    @SuppressWarnings("unused")
     protected AbstractConnection(SelectionKey selectionKey, AbstractMessageParser messageParser) {
         if (selectionKey == null || messageParser == null) {
             throw new NullPointerException();

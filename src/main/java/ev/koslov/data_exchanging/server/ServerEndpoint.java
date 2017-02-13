@@ -15,22 +15,20 @@ import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
-public class ServerEndpoint<C extends ServerConnection, I extends ServerInterface> extends AbstractEndpoint<C, I> {
+public class ServerEndpoint<I extends ServerInterface> extends AbstractEndpoint<I> {
 
     private boolean running;
     private ServerDataExchanger dataExchanger;
     private LinkedBlockingQueue<Long> newConnectionIds, closedConnectionIds;
 
-    private Map<Long, C> connections;
-    private Class<C> connectionClass;
+    private Map<Long, ServerConnection> connections;
 
-    public ServerEndpoint(int port, I serverInterface, Class<C> connectionClass) throws IOException {
+    public ServerEndpoint(int port, I serverInterface) throws IOException {
         super(serverInterface);
 
         newConnectionIds = new LinkedBlockingQueue<Long>();
         closedConnectionIds = new LinkedBlockingQueue<Long>();
-        connections = new HashMap<Long, C>();
-        this.connectionClass = connectionClass;
+        connections = new HashMap<Long, ServerConnection>();
 
         try {
 
@@ -51,12 +49,12 @@ public class ServerEndpoint<C extends ServerConnection, I extends ServerInterfac
         running = true;
     }
 
-    public final C getConnection(long id) {
+    public final ServerConnection getConnection(long id) {
         return connections.get(id);
     }
 
-    public final List<C> getConnections() {
-        return new ArrayList<C>(connections.values());
+    public final List<ServerConnection> getConnections() {
+        return new ArrayList<ServerConnection>(connections.values());
     }
 
     public final void closeConnection(long id) {
@@ -124,8 +122,7 @@ public class ServerEndpoint<C extends ServerConnection, I extends ServerInterfac
                     ServerMessageParser messageParser = new ServerMessageParser(getReadyMessages(), connectionId);
 
                     //create server connection instance and register it map using its ID
-                    C serverConnection = instantiateConnection(connectionClass, key, messageParser);
-                    serverConnection.setId(connectionId);
+                    ServerConnection serverConnection = new ServerConnection(key, messageParser, connectionId);
 
                     connections.put(serverConnection.getId(), serverConnection);
                     newConnectionIds.add(serverConnection.getId());
