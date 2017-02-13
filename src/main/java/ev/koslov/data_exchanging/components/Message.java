@@ -217,14 +217,14 @@ public final class Message {
         this.responseForRequestId = responseForRequestId;
     }
 
-    public Message setStatus(StatusTag status) {
+    void setStatus(StatusTag status) {
         this.status = status.ordinal();
-        return this;
     }
 
-    public Message setBody(AbstractMessageBody abstractMessageBody) throws IOException {
-        this.serializedBody = abstractMessageBody.getBytes();
-        return this;
+    void setBody(AbstractMessageBody abstractMessageBody) throws IOException {
+        if (abstractMessageBody != null){
+            this.serializedBody = abstractMessageBody.getBytes();
+        }
     }
 
     /**

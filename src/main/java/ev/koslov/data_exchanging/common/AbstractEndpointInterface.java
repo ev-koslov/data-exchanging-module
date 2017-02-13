@@ -20,7 +20,7 @@ import java.util.Map;
  * @param <C> implementation of {@link AbstractConnection}
  * @param <E> implementation of {@link AbstractEndpoint}
  */
-public abstract class AbstractEndpointInterface<C extends AbstractConnection, E extends AbstractEndpoint<C, ?>> {
+public abstract class AbstractEndpointInterface<E extends AbstractEndpoint<?>> {
     private E endpoint;
     private Map<Long, Request> requestsMap;
     private MessageFabric messageFabric;

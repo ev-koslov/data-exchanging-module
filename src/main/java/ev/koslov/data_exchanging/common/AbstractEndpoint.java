@@ -11,10 +11,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Main abstract class of DataExchanging module. Implementations are used to communicate with each other using SocketChannel.
- * @param <C> implementation of {@link AbstractConnection}
  * @param <I> implementation of {@link AbstractEndpointInterface}
  */
-public abstract class AbstractEndpoint<C extends AbstractConnection, I extends AbstractEndpointInterface> {
+public abstract class AbstractEndpoint<I extends AbstractEndpointInterface> {
     private final LinkedBlockingQueue<Message> readyMessages;
     private final ExecutorService executorService;
 
@@ -38,21 +37,6 @@ public abstract class AbstractEndpoint<C extends AbstractConnection, I extends A
         this.messageSorter = new MessageSorter(this, endpointInterface);
     }
 
-    /**
-     * Creates instance of {@link AbstractConnection} implementation using reflection mechanism (constructor we are using
-     * is private to ensure connection instantiated "outside" of endpoint).
-     * @param clazz A class of {@link Class<AbstractConnection> }
-     * @param key {@link SelectionKey} which is registered in {@link AbstractDataExchanger} implementation
-     * @param messageParser {@link AbstractMessageParser} implementations, is used to parse incoming RAW data and create
-     *                                                   {@link Message} instances.
-     * @return instantiated implementation of abstract {@link AbstractConnection}.
-     * @throws ReflectiveOperationException
-     */
-    protected final C instantiateConnection(Class<C> clazz, SelectionKey key, AbstractMessageParser messageParser) throws ReflectiveOperationException {
-        Constructor<C> constructor = clazz.getDeclaredConstructor(SelectionKey.class, AbstractMessageParser.class);
-        constructor.setAccessible(true);
-        return constructor.newInstance(key, messageParser);
-    }
 
     protected final LinkedBlockingQueue<Message> getReadyMessages() {
         return readyMessages;

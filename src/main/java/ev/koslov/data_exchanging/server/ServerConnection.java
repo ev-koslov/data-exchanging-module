@@ -10,12 +10,9 @@ import java.nio.channels.SelectionKey;
 public class ServerConnection extends AbstractConnection {
     private long id;
 
-    protected ServerConnection(SelectionKey selectionKey, AbstractMessageParser messageParser) {
+    protected ServerConnection(SelectionKey selectionKey, AbstractMessageParser messageParser, long connectionId) {
         super(selectionKey, messageParser);
-    }
-
-    final void setId(long id) {
-        this.id = id;
+        this.id = connectionId;
     }
 
     public long getId() {

@@ -9,10 +9,10 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 
-public class ClientEndpoint<C extends ClientConnection, I extends ClientInterface> extends AbstractEndpoint<C, I> {
-    private C connection;
+public class ClientEndpoint<I extends ClientInterface> extends AbstractEndpoint<I> {
+    private ClientConnection connection;
 
-    public ClientEndpoint(String host, int port, I clientInterface, Class<C> connectionClass) throws Exception {
+    public ClientEndpoint(String host, int port, I clientInterface) throws Exception {
         super(clientInterface);
         try {
 
@@ -22,7 +22,7 @@ public class ClientEndpoint<C extends ClientConnection, I extends ClientInterfac
             SelectionKey key = dataExchanger.registerChannel(channel);
             ClientMessageParser messageParser = new ClientMessageParser(getReadyMessages());
 
-            connection = instantiateConnection(connectionClass, key, messageParser);
+            connection = new ClientConnection(key, messageParser);
 
             getExecutorService().execute(dataExchanger);
             getExecutorService().execute(getMessageSorter());
@@ -34,7 +34,7 @@ public class ClientEndpoint<C extends ClientConnection, I extends ClientInterfac
 
     }
 
-    public final C getConnection() {
+    public final ClientConnection getConnection() {
         return connection;
     }
 
