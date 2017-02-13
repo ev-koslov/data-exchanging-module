@@ -10,6 +10,11 @@ import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.util.Arrays;
 
+
+//TODO: придумать вариант вычитывания хидера и начинать обработку еще до полной загрузки тела сообщения.
+//TODO: например, метод readBody(Message partialMessage), вызываемый, если сообщение получено частично.
+//TODO: добавить в сообщение флаг - ЧАСТИЧНОЕ. И в зависимотси от него, вызывать или parse(ByteBuffer rawBuffer) или readBody(Message partialMessage, ByteBuffer rawBuffer)
+
 public final class Message {
     public static int TARGET_SERVER = 0;
 
