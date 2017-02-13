@@ -123,7 +123,7 @@ public final class Message {
 //        this.targetId = targetId;
 //    }
 //
-//    public Message(MessageTypeTag messageType, StatusTag status, long targetId, MessageBody messageBody) throws IOException {
+//    public Message(MessageTypeTag messageType, StatusTag status, long targetId, AbstractMessageBody messageBody) throws IOException {
 //        this(messageType, status, targetId);
 //        this.serializedBody = messageBody.getBytes();
 //    }
@@ -133,7 +133,7 @@ public final class Message {
 //        this.responseForRequestId = responseForRequestId;
 //    }
 //
-//    public Message(MessageTypeTag messageType, StatusTag status, long targetId, long responseForRequestId, MessageBody messageBody) throws IOException {
+//    public Message(MessageTypeTag messageType, StatusTag status, long targetId, long responseForRequestId, AbstractMessageBody messageBody) throws IOException {
 //        this(messageType, status, targetId, responseForRequestId);
 //        this.serializedBody = messageBody.getBytes();
 //    }
@@ -142,7 +142,7 @@ public final class Message {
         return serializedBody.length > 0;
     }
 
-    public <T extends Enum<T>, B extends MessageBody<T>> B deserializeBody() throws IOException, ClassNotFoundException {
+    public <T extends Enum<T>, B extends AbstractMessageBody> B deserializeBody() throws IOException, ClassNotFoundException {
 
         if (serializedBody.length == 0){
             return null;
@@ -221,8 +221,8 @@ public final class Message {
         this.status = status.ordinal();
     }
 
-    public void setBody(MessageBody messageBody) throws IOException {
-        this.serializedBody = messageBody.getBytes();
+    public void setBody(AbstractMessageBody abstractMessageBody) throws IOException {
+        this.serializedBody = abstractMessageBody.getBytes();
     }
 
     /**

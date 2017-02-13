@@ -3,16 +3,10 @@ package ev.koslov.data_exchanging.components;
 import java.io.*;
 
 
-public class MessageBody<T extends Enum<T>> implements Serializable {
-    private T command;
+class AbstractMessageBody implements Serializable {
 
-    public MessageBody(T command) {
-        //TODO: add checking for T implements Taglib interface. Throw exception otherwise
-        this.command = command;
-    }
+    protected AbstractMessageBody() {
 
-    public T getCommand() {
-        return command;
     }
 
     protected final byte[] getBytes() throws IOException {

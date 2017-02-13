@@ -3,7 +3,6 @@ package ev.koslov.data_exchanging.components;
 
 public class Request {
     private long requestId;
-    private Message requestMessage;
     private Message responseMessage;
 
     public Request(Message requestMessage) {
