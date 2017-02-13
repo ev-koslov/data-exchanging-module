@@ -21,11 +21,11 @@ public abstract class ClientInterface<C extends ClientConnection> extends Abstra
     final void processRequest(Message requestMessage) {
         switch (requestMessage.getMessageType()) {
             case SERVER_TO_CLIENT_REQUEST: {
-                processRequestFromServerToClient(requestMessage);
+                processRequestFromServer(requestMessage);
                 break;
             }
             case CLIENT_TO_CLIENT_REQUEST: {
-                processRequestFromClientToClient(requestMessage);
+                processRequestFromClient(requestMessage);
                 break;
             }
             default: {
@@ -39,7 +39,7 @@ public abstract class ClientInterface<C extends ClientConnection> extends Abstra
         getEndpoint().getConnection().sendMessage(messageToSend);
     }
 
-    protected abstract void processRequestFromServerToClient(Message request);
+    protected abstract void processRequestFromServer(Message request);
 
-    protected abstract void processRequestFromClientToClient(Message request);
+    protected abstract void processRequestFromClient(Message request);
 }

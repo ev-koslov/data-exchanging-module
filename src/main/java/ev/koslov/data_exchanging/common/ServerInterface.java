@@ -19,7 +19,7 @@ public abstract class ServerInterface<C extends ServerConnection> extends Abstra
     final void processRequest(Message requestMessage) {
         switch (requestMessage.getMessageType()) {
             case CLIENT_TO_SERVER_REQUEST: {
-                processRequestFromClientToServer(requestMessage);
+                processRequestFromClient(requestMessage);
                 break;
             }
             case CLIENT_TO_CLIENT_REQUEST: {
@@ -45,7 +45,7 @@ public abstract class ServerInterface<C extends ServerConnection> extends Abstra
     }
 
 
-    protected abstract void processRequestFromClientToServer(Message request);
+    protected abstract void processRequestFromClient(Message request);
 
     protected abstract void processRequestFromClientToClient(Message request);
 
