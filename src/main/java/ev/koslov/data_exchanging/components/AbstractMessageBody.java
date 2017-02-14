@@ -1,12 +1,15 @@
 package ev.koslov.data_exchanging.components;
 
 import java.io.*;
+import java.util.Properties;
+import java.util.Set;
 
 
 abstract class AbstractMessageBody implements Serializable {
+    private Properties properties;
 
     protected AbstractMessageBody() {
-
+        this.properties = new Properties();
     }
 
     protected final byte[] getBytes() throws IOException {
@@ -30,5 +33,21 @@ abstract class AbstractMessageBody implements Serializable {
                 }
             }
         }
+    }
+
+    public Serializable getProperty(String key) {
+        return (Serializable) properties.get(key);
+    }
+
+    public void setProperty(String key, Serializable value) {
+        properties.put(key, value);
+    }
+
+    public Set<String> propertyNames() {
+        return properties.stringPropertyNames();
+    }
+
+    public int propertiesSize() {
+        return properties.size();
     }
 }

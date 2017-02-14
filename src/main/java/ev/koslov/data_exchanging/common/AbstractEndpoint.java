@@ -11,28 +11,24 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Main abstract class of DataExchanging module. Implementations are used to communicate with each other using SocketChannel.
- * @param <I> implementation of {@link AbstractEndpointInterface}
  */
-public abstract class AbstractEndpoint<I extends AbstractEndpointInterface> {
+public abstract class AbstractEndpoint {
     private final LinkedBlockingQueue<Message> readyMessages;
     private final ExecutorService executorService;
 
     private final MessageSorter messageSorter;
-    private final I endpointInterface;
 
     /**
      * Creates instance of endpoint using given {@link AbstractEndpointInterface} implementation.
      * @param endpointInterface implementation of {@link AbstractEndpointInterface} which is used to communicate with
      *                          other side of endpoint (remote side in network).
      */
-    protected AbstractEndpoint(I endpointInterface) {
+    protected AbstractEndpoint(AbstractEndpointInterface endpointInterface) {
         readyMessages = new LinkedBlockingQueue<Message>();
         executorService = Executors.newCachedThreadPool();
 
-        this.endpointInterface = endpointInterface;
-
         //make current endpoint associated with given endpoint interface
-        this.endpointInterface.setEndpoint(this);
+        endpointInterface.setEndpoint(this);
 
         this.messageSorter = new MessageSorter(this, endpointInterface);
     }
@@ -63,9 +59,6 @@ public abstract class AbstractEndpoint<I extends AbstractEndpointInterface> {
      * Get an associated {@link AbstractEndpointInterface} implementation.
      * @return bound {@link AbstractEndpointInterface} implementation
      */
-    public final I getInterface(){
-        return endpointInterface;
-    }
 
     public boolean isRunning() {
         return !this.executorService.isShutdown();

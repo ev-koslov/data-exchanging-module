@@ -1,11 +1,11 @@
 package ev.koslov.data_exchanging.common;
 
 
-import ev.koslov.data_exchanging.client.ClientEndpoint;
+import ev.koslov.data_exchanging.client.Client;
 import ev.koslov.data_exchanging.components.Message;
 import ev.koslov.data_exchanging.components.tags.MessageTypeTag;
 
-public abstract class ClientInterface extends AbstractEndpointInterface<ClientEndpoint<?>> {
+public abstract class AbstractClientInterface extends AbstractEndpointInterface<Client> {
 
 
     @Override

@@ -19,11 +19,10 @@ import java.util.Map;
  *
  * @param <E> implementation of {@link AbstractEndpoint}
  */
-public abstract class AbstractEndpointInterface<E extends AbstractEndpoint<?>> {
+public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
     private E endpoint;
     private Map<Long, Request> requestsMap;
     private MessageFabric messageFabric;
-    private boolean readyForProcessing;
 
     protected AbstractEndpointInterface() {
         this.requestsMap = new HashMap<Long, Request>();
@@ -37,7 +36,6 @@ public abstract class AbstractEndpointInterface<E extends AbstractEndpoint<?>> {
      */
     final void setEndpoint(E endpoint) {
         this.endpoint = endpoint;
-        this.readyForProcessing = true;
     }
 
     /**
@@ -45,7 +43,6 @@ public abstract class AbstractEndpointInterface<E extends AbstractEndpoint<?>> {
      * which notified by this method, will receive {@link TimeoutException} because of receiving no response.
      */
     final void cancelRequests() {
-        readyForProcessing = false;
         List<Request> requests = new ArrayList<Request>(requestsMap.values());
         for (Request request : requests) {
             synchronized (request) {

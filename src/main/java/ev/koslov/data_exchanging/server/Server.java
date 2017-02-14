@@ -2,11 +2,10 @@ package ev.koslov.data_exchanging.server;
 
 
 import ev.koslov.data_exchanging.common.AbstractEndpoint;
-import ev.koslov.data_exchanging.common.ServerInterface;
+import ev.koslov.data_exchanging.common.AbstractServerInterface;
 import ev.koslov.data_exchanging.components.Message;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
@@ -15,17 +14,18 @@ import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
-public class ServerEndpoint<I extends ServerInterface> extends AbstractEndpoint<I> {
+public class Server<I extends AbstractServerInterface> extends AbstractEndpoint {
 
     private boolean running;
     private ServerDataExchanger dataExchanger;
     private LinkedBlockingQueue<Long> newConnectionIds, closedConnectionIds;
+    private I serverInterface;
 
     private Map<Long, ServerConnection> connections;
 
-    public ServerEndpoint(int port, I serverInterface) throws IOException {
+    public Server(int port, I serverInterface) throws IOException {
         super(serverInterface);
-
+        this.serverInterface = serverInterface;
         newConnectionIds = new LinkedBlockingQueue<Long>();
         closedConnectionIds = new LinkedBlockingQueue<Long>();
         connections = new HashMap<Long, ServerConnection>();
@@ -62,6 +62,10 @@ public class ServerEndpoint<I extends ServerInterface> extends AbstractEndpoint<
             connections.remove(id).close();
             closedConnectionIds.add(id);
         }
+    }
+
+    public I getServerInterface() {
+        return serverInterface;
     }
 
     @Override

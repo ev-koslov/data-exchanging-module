@@ -8,11 +8,11 @@ import java.nio.channels.SocketChannel;
 
 final class ServerDataExchanger extends AbstractDataExchanger<ServerConnection> {
 
-    private ServerEndpoint serverEndpoint;
+    private Server server;
 
-    ServerDataExchanger(ServerEndpoint serverEndpoint) throws IOException {
+    ServerDataExchanger(Server server) throws IOException {
         super();
-        this.serverEndpoint = serverEndpoint;
+        this.server = server;
     }
 
     @Override
@@ -22,6 +22,6 @@ final class ServerDataExchanger extends AbstractDataExchanger<ServerConnection> 
 
     @Override
     protected void closeConnection(ServerConnection connection) {
-        serverEndpoint.closeConnection(connection.getId());
+        server.closeConnection(connection.getId());
     }
 }

@@ -4,10 +4,10 @@ package ev.koslov.data_exchanging.common;
 import ev.koslov.data_exchanging.components.Message;
 import ev.koslov.data_exchanging.components.tags.MessageTypeTag;
 import ev.koslov.data_exchanging.server.ServerConnection;
-import ev.koslov.data_exchanging.server.ServerEndpoint;
+import ev.koslov.data_exchanging.server.Server;
 
 
-public abstract class ServerInterface extends AbstractEndpointInterface<ServerEndpoint<?>> {
+public abstract class AbstractServerInterface extends AbstractEndpointInterface<Server> {
 
 
     @Override

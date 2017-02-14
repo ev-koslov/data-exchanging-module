@@ -23,14 +23,6 @@ public abstract class AbstractMessageParser {
 
         parseBuffer.put(dataToAppend);
 
-        parseNewMessages();
-
-    }
-
-    protected abstract Message prepareNewMessage(Message message);
-
-    private void parseNewMessages() throws ParseException {
-
         do {
 
             Message nextMessage = Message.parse(parseBuffer);
@@ -46,6 +38,8 @@ public abstract class AbstractMessageParser {
         } while (true);
 
     }
+
+    protected abstract Message prepareNewMessage(Message message);
 
     //TODO: make external method to add message to message queue
 

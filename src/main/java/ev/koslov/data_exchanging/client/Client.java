@@ -2,19 +2,21 @@ package ev.koslov.data_exchanging.client;
 
 
 import ev.koslov.data_exchanging.common.AbstractEndpoint;
-import ev.koslov.data_exchanging.common.ClientInterface;
+import ev.koslov.data_exchanging.common.AbstractClientInterface;
 
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 
-public class ClientEndpoint<I extends ClientInterface> extends AbstractEndpoint<I> {
+public class Client<I extends AbstractClientInterface> extends AbstractEndpoint {
     private ClientConnection connection;
+    private I clientInterface;
 
-    public ClientEndpoint(String host, int port, I clientInterface) throws Exception {
+    public Client(String host, int port, I clientInterface) throws Exception {
         super(clientInterface);
         try {
+            this.clientInterface = clientInterface;
 
             SocketChannel channel = SocketChannel.open(new InetSocketAddress(host, port));
 
@@ -38,6 +40,9 @@ public class ClientEndpoint<I extends ClientInterface> extends AbstractEndpoint<
         return connection;
     }
 
+    public I getClientInterface() {
+        return clientInterface;
+    }
 
     @Override
     public final boolean isRunning() {

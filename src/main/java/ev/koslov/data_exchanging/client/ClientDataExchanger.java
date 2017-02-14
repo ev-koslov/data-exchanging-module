@@ -9,15 +9,15 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 final class ClientDataExchanger extends AbstractDataExchanger<ClientConnection> {
-    private ClientEndpoint clientEndpoint;
+    private Client client;
 
-    protected ClientDataExchanger(ClientEndpoint clientEndpoint) throws IOException {
-        this.clientEndpoint = clientEndpoint;
+    protected ClientDataExchanger(Client client) throws IOException {
+        this.client = client;
     }
 
     @Override
     protected void closeConnection(ClientConnection connection) {
-        clientEndpoint.shutdown();
+        client.shutdown();
     }
 
     @Override

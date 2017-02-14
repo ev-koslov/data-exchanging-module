@@ -9,6 +9,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.text.ParseException;
 import java.util.LinkedList;
+import java.util.Properties;
 
 /**
  * Implementations of this subclass are holding message parsing mechanism ({@link AbstractMessageParser}) and list that contains
@@ -20,13 +21,12 @@ public abstract class AbstractConnection {
     private SelectionKey selectionKey;
     private AbstractMessageParser messageParser;
 
+    private Properties properties;
+    private Object attachment;
+
 
     //messages to send to the socketChannel
     private final LinkedList<ByteBuffer> outboxingMessages;
-
-    {
-        this.outboxingMessages = new LinkedList<ByteBuffer>();
-    }
 
     /**
      * Creates server connection instance.
@@ -41,6 +41,9 @@ public abstract class AbstractConnection {
         if (!selectionKey.isValid()) {
             throw new IllegalArgumentException("Given selection key is invalid.");
         }
+
+        this.outboxingMessages = new LinkedList<ByteBuffer>();
+        this.properties = new Properties();
 
         //getting socket channel associated with given selector
         this.channel = (SocketChannel) selectionKey.channel();
@@ -164,5 +167,17 @@ public abstract class AbstractConnection {
 
         outboxingMessages.clear();
 
+    }
+
+    public Properties getProperties() {
+        return properties;
+    }
+
+    public Object attachment() {
+        return attachment;
+    }
+
+    public void attach(Object attachment) {
+        this.attachment = attachment;
     }
 }
