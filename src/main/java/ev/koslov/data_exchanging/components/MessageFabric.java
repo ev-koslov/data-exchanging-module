@@ -18,7 +18,7 @@ public final class MessageFabric {
     public Message clientToServerRequestMessage(RequestMessageBody requestMessageBody) throws IOException {
         Message message = prepareMessage(MessageTypeTag.CLIENT_TO_SERVER_REQUEST);
         message.setBody(requestMessageBody);
-        return prepareMessage(MessageTypeTag.CLIENT_TO_SERVER_REQUEST);
+        return message;
     }
 
     public Message clientToClientRequestMessage(long targetId, RequestMessageBody requestMessageBody) throws IOException {
@@ -28,7 +28,7 @@ public final class MessageFabric {
         return message;
     }
 
-    public Message responseMessage(Message request, ResponseMessageBody messageBody) throws IOException {
+    public Message responseMessage(Message request, StatusTag statusTag, ResponseMessageBody messageBody) throws IOException {
         Message responseMessage = new Message();
 
         switch (request.getMessageType()) {
@@ -47,6 +47,7 @@ public final class MessageFabric {
         }
 
         responseMessage.setTargetId(request.getSourceId());
+        responseMessage.setStatus(statusTag);
         responseMessage.setResponseForRequestId(request.getRequestId());
 
         responseMessage.setBody(messageBody);
@@ -54,16 +55,9 @@ public final class MessageFabric {
         return responseMessage;
     }
 
-    public Message responseMessage(Message request, StatusTag statusTag) throws IOException {
-        Message message = responseMessage(request, (ResponseMessageBody) null);
-        message.setStatus(statusTag);
-        return message;
-    }
-
     private Message prepareMessage(MessageTypeTag typeTag) {
         Message message = new Message();
         message.setMessageType(typeTag);
         return message;
     }
-
 }

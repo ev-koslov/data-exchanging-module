@@ -142,7 +142,7 @@ public final class Message {
         return serializedBody.length > 0;
     }
 
-    public <T extends Enum<T>, B extends AbstractMessageBody> B deserializeBody() throws IOException, ClassNotFoundException {
+    public <B extends AbstractMessageBody> B deserializeBody() throws IOException, ClassNotFoundException {
 
         if (serializedBody.length == 0){
             return null;
