@@ -119,16 +119,17 @@ public final class Message {
 
     /**
      * Sets message body
+     *
      * @param abstractMessageBody data to set
      * @throws IOException if AbstractMessageBody implementation contains data, that could not be serialized.
      */
-    public void setBody(AbstractMessageBody abstractMessageBody) throws IOException {
+    public void setBody(AbstractMessageBody abstractMessageBody) {
         if (abstractMessageBody != null) {
             this.serializedBody = abstractMessageBody.getBytes();
         }
     }
 
-    public <B extends AbstractMessageBody> B deserializeBody() throws IOException, ClassNotFoundException {
+    public <B extends AbstractMessageBody> B deserializeBody() {
 
         if (serializedBody.length == 0) {
             return null;
@@ -144,6 +145,14 @@ public final class Message {
 
             return (B) ois.readObject();
 
+        } catch (ClassNotFoundException e) {
+
+            throw new RuntimeException("This class cannon be deserialized here.", e);
+
+        } catch (IOException e) {
+
+            throw new RuntimeException("This class cannon be deserialized here.", e);
+
         } finally {
 
             if (ois != null) {
@@ -155,7 +164,11 @@ public final class Message {
             }
 
             if (bis != null) {
-                bis.close();
+                try {
+                    bis.close();
+                } catch (IOException e) {
+                    //do nothing
+                }
             }
         }
     }

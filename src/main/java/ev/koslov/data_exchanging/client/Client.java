@@ -4,6 +4,7 @@ package ev.koslov.data_exchanging.client;
 import ev.koslov.data_exchanging.common.AbstractEndpoint;
 import ev.koslov.data_exchanging.common.AbstractClientInterface;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -12,7 +13,7 @@ import java.nio.channels.SocketChannel;
 public class Client extends AbstractEndpoint {
     private ClientConnection connection;
 
-    public Client(String host, int port, AbstractClientInterface clientInterface) throws Exception {
+    public Client(String host, int port, AbstractClientInterface clientInterface) throws IOException {
         super(clientInterface);
         try {
             SocketChannel channel = SocketChannel.open(new InetSocketAddress(host, port));
@@ -25,7 +26,7 @@ public class Client extends AbstractEndpoint {
 
             executeTask(dataExchanger);
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             shutdown();
             throw e;
         }

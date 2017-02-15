@@ -10,6 +10,7 @@ import java.nio.channels.SocketChannel;
 import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Implementations of this subclass are holding message parsing mechanism ({@link AbstractMessageParser}) and list that contains

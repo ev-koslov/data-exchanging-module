@@ -14,6 +14,26 @@ import java.io.IOException;
 
 public abstract class AbstractServerInterface extends AbstractEndpointInterface<Server> {
 
+    public void startServer(int port) throws IOException {
+        if (super.getAssociatedEndpoint() != null && super.getAssociatedEndpoint().isRunning()){
+            throw new UnsupportedOperationException("Server is already running.");
+        }
+
+        //just creating server instance. It will be associated with current interface in constructor
+        new Server(port, this);
+    }
+
+    public boolean isServerRunning() {
+        Server server = getAssociatedEndpoint();
+        return server != null && server.isRunning();
+    }
+
+    public void stopServer() {
+        Server server = getAssociatedEndpoint();
+        if (server != null && server.isRunning()){
+            server.shutdown();
+        }
+    }
 
     @Override
     final boolean isResponse(Message responseMessage) {
@@ -40,13 +60,13 @@ public abstract class AbstractServerInterface extends AbstractEndpointInterface<
 
     @Override
     final void send(Message messageToSend) {
-        ServerConnection connection = getEndpoint().getConnection(messageToSend.getHeader().getTargetId());
+        ServerConnection connection = getAssociatedEndpoint().getConnection(messageToSend.getHeader().getTargetId());
         if (connection != null) {
             connection.sendMessage(messageToSend);
         }
     }
 
-    public void serverToClientRequest(long targetId, RequestMessageBody requestMessageBody) throws IOException {
+    public void serverToClientRequest(long targetId, RequestMessageBody requestMessageBody) {
         Message message = new Message();
         message.getHeader().setMessageType(MessageTypeTag.SERVER_TO_CLIENT_REQUEST);
         message.getHeader().setTargetId(targetId);
@@ -54,7 +74,7 @@ public abstract class AbstractServerInterface extends AbstractEndpointInterface<
         send(message);
     }
 
-    public ResponseMessageBody serverToClientRequest(long targetId, RequestMessageBody requestMessageBody, long timeout) throws IOException, InterruptedException, ClassNotFoundException, RequestException {
+    public ResponseMessageBody serverToClientRequest(long targetId, RequestMessageBody requestMessageBody, long timeout) throws InterruptedException, RequestException {
         Message message = new Message();
         message.getHeader().setMessageType(MessageTypeTag.SERVER_TO_CLIENT_REQUEST);
         message.getHeader().setTargetId(targetId);
