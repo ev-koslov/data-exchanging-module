@@ -6,8 +6,8 @@ import ev.koslov.data_exchanging.components.Message;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
-public final class ServerMessageParser  extends AbstractMessageParser {
-    private long associatedConnectionId;
+final class ServerMessageParser extends AbstractMessageParser {
+    private final long associatedConnectionId;
 
     ServerMessageParser(LinkedBlockingQueue<Message> readyMessages, long associatedConnectionId) {
         super(readyMessages);

@@ -9,7 +9,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 final class ClientDataExchanger extends AbstractDataExchanger<ClientConnection> {
-    private Client client;
+    private final Client client;
 
     protected ClientDataExchanger(Client client) throws IOException {
         this.client = client;

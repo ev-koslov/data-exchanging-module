@@ -43,6 +43,21 @@ public abstract class AbstractClientInterface extends AbstractEndpointInterface<
         getEndpoint().getConnection().sendMessage(messageToSend);
     }
 
+    public void clientToServerRequest(RequestMessageBody requestMessageBody) throws IOException {
+        Message message = new Message();
+        message.getHeader().setMessageType(MessageTypeTag.CLIENT_TO_SERVER_REQUEST);
+        message.setBody(requestMessageBody);
+        send(message);
+    }
+
+    public void clientToClientRequest(long targetId, RequestMessageBody requestMessageBody) throws IOException {
+        Message message = new Message();
+        message.getHeader().setMessageType(MessageTypeTag.CLIENT_TO_CLIENT_REQUEST);
+        message.getHeader().setTargetId(targetId);
+        message.setBody(requestMessageBody);
+        send(message);
+    }
+
     public ResponseMessageBody clientToServerRequest(RequestMessageBody requestMessageBody, long timeout) throws IOException, InterruptedException, ClassNotFoundException, RequestException {
         Message message = new Message();
         message.getHeader().setMessageType(MessageTypeTag.CLIENT_TO_SERVER_REQUEST);

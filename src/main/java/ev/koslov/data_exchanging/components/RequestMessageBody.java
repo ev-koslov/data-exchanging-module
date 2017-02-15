@@ -2,7 +2,7 @@ package ev.koslov.data_exchanging.components;
 
 
 public class RequestMessageBody<T extends Enum<T>> extends AbstractMessageBody {
-    private T command;
+    private final T command;
 
     public RequestMessageBody(T requestCommand) {
         //TODO: add checking for T implements Taglib interface. Throw exception otherwise

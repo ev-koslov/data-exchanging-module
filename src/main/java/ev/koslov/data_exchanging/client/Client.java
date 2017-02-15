@@ -9,15 +9,12 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 
-public class Client<I extends AbstractClientInterface> extends AbstractEndpoint {
+public class Client extends AbstractEndpoint {
     private ClientConnection connection;
-    private I clientInterface;
 
-    public Client(String host, int port, I clientInterface) throws Exception {
+    public Client(String host, int port, AbstractClientInterface clientInterface) throws Exception {
         super(clientInterface);
         try {
-            this.clientInterface = clientInterface;
-
             SocketChannel channel = SocketChannel.open(new InetSocketAddress(host, port));
 
             ClientDataExchanger dataExchanger = new ClientDataExchanger(this);
@@ -26,8 +23,7 @@ public class Client<I extends AbstractClientInterface> extends AbstractEndpoint 
 
             connection = new ClientConnection(key, messageParser);
 
-            getExecutorService().execute(dataExchanger);
-            getExecutorService().execute(getMessageSorter());
+            executeTask(dataExchanger);
 
         } catch (Exception e) {
             shutdown();
@@ -38,10 +34,6 @@ public class Client<I extends AbstractClientInterface> extends AbstractEndpoint 
 
     public final ClientConnection getConnection() {
         return connection;
-    }
-
-    public I getClientInterface() {
-        return clientInterface;
     }
 
     @Override

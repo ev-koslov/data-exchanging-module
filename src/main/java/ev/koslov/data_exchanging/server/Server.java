@@ -14,18 +14,16 @@ import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
-public class Server<I extends AbstractServerInterface> extends AbstractEndpoint {
+public class Server extends AbstractEndpoint {
 
     private boolean running;
     private ServerDataExchanger dataExchanger;
-    private LinkedBlockingQueue<Long> newConnectionIds, closedConnectionIds;
-    private I serverInterface;
 
-    private Map<Long, ServerConnection> connections;
+    private final LinkedBlockingQueue<Long> newConnectionIds, closedConnectionIds;
+    private final Map<Long, ServerConnection> connections;
 
-    public Server(int port, I serverInterface) throws IOException {
+    public Server(int port, AbstractServerInterface serverInterface) throws IOException {
         super(serverInterface);
-        this.serverInterface = serverInterface;
         newConnectionIds = new LinkedBlockingQueue<Long>();
         closedConnectionIds = new LinkedBlockingQueue<Long>();
         connections = new HashMap<Long, ServerConnection>();
@@ -36,10 +34,8 @@ public class Server<I extends AbstractServerInterface> extends AbstractEndpoint 
 
             dataExchanger = new ServerDataExchanger(this);
 
-            getExecutorService().execute(dataExchanger);
-            getExecutorService().execute(newConnectionsListener);
-            getExecutorService().execute(getMessageSorter());
-
+            executeTask(dataExchanger);
+            executeTask(newConnectionsListener);
 
         } catch (IOException e) {
             shutdown();
@@ -62,10 +58,6 @@ public class Server<I extends AbstractServerInterface> extends AbstractEndpoint 
             connections.remove(id).close();
             closedConnectionIds.add(id);
         }
-    }
-
-    public I getServerInterface() {
-        return serverInterface;
     }
 
     @Override
@@ -135,7 +127,7 @@ public class Server<I extends AbstractServerInterface> extends AbstractEndpoint 
 
             } catch (Exception e) {
                 e.printStackTrace();
-                //TODO: check how to watch for server stops listening for new connetions.
+                //TODO: check how to watch for server stops listening for new connections.
 
             } finally {
                 try {

@@ -6,13 +6,13 @@ import java.util.Set;
 
 
 abstract class AbstractMessageBody implements Serializable {
-    private Properties properties;
+    private final Properties properties;
 
-    protected AbstractMessageBody() {
+    AbstractMessageBody() {
         this.properties = new Properties();
     }
 
-    protected final byte[] getBytes() throws IOException {
+    final byte[] getBytes() throws IOException {
         ByteArrayOutputStream bos;
         ObjectOutputStream ous = null;
 

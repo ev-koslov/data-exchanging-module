@@ -5,8 +5,8 @@ import ev.koslov.data_exchanging.components.Message;
 
 public final class MessageSorter implements Runnable {
 
-    private AbstractEndpoint endpoint;
-    private AbstractEndpointInterface endpointInterface;
+    private final AbstractEndpoint endpoint;
+    private final AbstractEndpointInterface endpointInterface;
 
     public MessageSorter(AbstractEndpoint endpoint, AbstractEndpointInterface endpointInterface) {
         this.endpoint = endpoint;
@@ -27,7 +27,7 @@ public final class MessageSorter implements Runnable {
                         endpointInterface.processRequest(message);
                     }
 
-                    //TODO: perform processing of each message in separate thread. ?Maybe it is not a good idea
+                    //TODO: perform processing of each message in separate thread. Maybe it is not a good idea?
 //                    endpoint.getExecutorService().execute(new Runnable() {
 //                        public void run() {
 //                            if (endpointInterface.isResponse(message)){
