@@ -16,7 +16,6 @@ import java.util.Arrays;
 //TODO: добавить в сообщение флаг - ЧАСТИЧНОЕ. И в зависимотси от него, вызывать или parse(ByteBuffer rawBuffer) или readBody(Message partialMessage, ByteBuffer rawBuffer)
 
 public final class Message {
-    public static int TARGET_SERVER = 0;
 
     //Message header. Eve message must start from it. Otherwise IOException will be thrown
     private static final String MESSAGE_HEADER = "msg";
@@ -24,8 +23,8 @@ public final class Message {
     private static final byte[] MESSAGE_HEADER_BYTES = MESSAGE_HEADER.getBytes();
     private static final int MESSAGE_HEADER_LENGTH = MESSAGE_HEADER_BYTES.length;
 
-    //Header size is a sum of HEADER length and int value wich represents data (byte[]) size + int tag
-    private static final int MESSAGE_META_LENGTH = MESSAGE_HEADER_BYTES.length  + 4 + 4 + 8 + 8 + 8 + 8 + 4;
+    //Header size is a sum of HEADER length and int value which represents data (byte[]) size + int tag
+    private static final int MESSAGE_META_LENGTH = MESSAGE_HEADER_BYTES.length + 4 + 4 + 8 + 8 + 8 + 8 + 4;
 
     /**
      * Parses message from ByteBuffer that contains raw serializedBody and compacts buffer if message was parsed
@@ -74,12 +73,12 @@ public final class Message {
 
                 //creating message object
                 parsedMessage = new Message();
-                parsedMessage.messageType = messageTypeTag;
-                parsedMessage.status = statusTag;
-                parsedMessage.targetId = targetId;
-                parsedMessage.sourceId = sourceId;
-                parsedMessage.requestId = requestId;
-                parsedMessage.responseForRequestId = responseForRequestId;
+                parsedMessage.header.messageType = messageTypeTag;
+                parsedMessage.header.status = statusTag;
+                parsedMessage.header.targetId = targetId;
+                parsedMessage.header.sourceId = sourceId;
+                parsedMessage.header.requestId = requestId;
+                parsedMessage.header.responseForRequestId = responseForRequestId;
 
                 if (dataSize > 0) {
                     byte[] body = new byte[dataSize];
@@ -102,53 +101,40 @@ public final class Message {
     }
 
 
-    private int messageType;
-    private int status = 0;
+    private final Header header;
+    private byte[] serializedBody;
 
-    private long targetId;
-    private long sourceId;
-
-    private long requestId = -1;
-    private long responseForRequestId = -1;
-
-    private byte[] serializedBody = new byte[0];
-
-    protected Message() {
-
+    public Message() {
+        header = new Header();
+        serializedBody = new byte[0];
     }
 
-//    public Message(MessageTypeTag messageType, StatusTag status, long targetId) {
-//        this.messageType = messageType.ordinal();
-//        this.status = status.ordinal();
-//        this.targetId = targetId;
-//    }
-//
-//    public Message(MessageTypeTag messageType, StatusTag status, long targetId, AbstractMessageBody messageBody) throws IOException {
-//        this(messageType, status, targetId);
-//        this.serializedBody = messageBody.getBytes();
-//    }
-//
-//    public Message(MessageTypeTag messageType, StatusTag status, long targetId, long responseForRequestId) {
-//        this(messageType, status, targetId);
-//        this.responseForRequestId = responseForRequestId;
-//    }
-//
-//    public Message(MessageTypeTag messageType, StatusTag status, long targetId, long responseForRequestId, AbstractMessageBody messageBody) throws IOException {
-//        this(messageType, status, targetId, responseForRequestId);
-//        this.serializedBody = messageBody.getBytes();
-//    }
+    public Header getHeader() {
+        return header;
+    }
 
-    public boolean hasBody(){
+    public boolean hasBody() {
         return serializedBody.length > 0;
+    }
+
+    /**
+     * Sets message body
+     * @param abstractMessageBody data to set
+     * @throws IOException if AbstractMessageBody implementation contains data, that could not be serialized.
+     */
+    public void setBody(AbstractMessageBody abstractMessageBody) throws IOException {
+        if (abstractMessageBody != null) {
+            this.serializedBody = abstractMessageBody.getBytes();
+        }
     }
 
     public <B extends AbstractMessageBody> B deserializeBody() throws IOException, ClassNotFoundException {
 
-        if (serializedBody.length == 0){
+        if (serializedBody.length == 0) {
             return null;
         }
 
-        ByteArrayInputStream bis;
+        ByteArrayInputStream bis = null;
         ObjectInputStream ois = null;
 
         try {
@@ -167,63 +153,10 @@ public final class Message {
                     //do nothing
                 }
             }
-        }
-    }
 
-    public MessageTypeTag getMessageType() {
-        return MessageTypeTag.values()[messageType];
-    }
-
-    public StatusTag getStatus() {
-        return StatusTag.values()[status];
-    }
-
-    public long getTargetId() {
-        return targetId;
-    }
-
-    public long getSourceId() {
-        return sourceId;
-    }
-
-    public long getRequestId() {
-        return requestId;
-    }
-
-    public long getResponseForRequestId() {
-        return responseForRequestId;
-    }
-
-
-    public void setSourceId(long sourceId) {
-        this.sourceId = sourceId;
-    }
-
-    void setRequestId(long requestId) {
-        this.requestId = requestId;
-    }
-
-
-
-    void setMessageType(MessageTypeTag messageType) {
-        this.messageType = messageType.ordinal();
-    }
-
-    void setTargetId(long targetId) {
-        this.targetId = targetId;
-    }
-
-    void setResponseForRequestId(long responseForRequestId) {
-        this.responseForRequestId = responseForRequestId;
-    }
-
-    void setStatus(StatusTag status) {
-        this.status = status.ordinal();
-    }
-
-    void setBody(AbstractMessageBody abstractMessageBody) throws IOException {
-        if (abstractMessageBody != null){
-            this.serializedBody = abstractMessageBody.getBytes();
+            if (bis != null) {
+                bis.close();
+            }
         }
     }
 
@@ -235,16 +168,81 @@ public final class Message {
     public final ByteBuffer getAsReadReadyByteBuffer() {
         ByteBuffer buffer = ByteBuffer.allocate(MESSAGE_META_LENGTH + serializedBody.length);
         buffer.put(MESSAGE_HEADER_BYTES);
-        buffer.putInt(messageType);
-        buffer.putInt(status);
-        buffer.putLong(targetId);
-        buffer.putLong(sourceId);
-        buffer.putLong(requestId);
-        buffer.putLong(responseForRequestId);
+        buffer.putInt(header.messageType);
+        buffer.putInt(header.status);
+        buffer.putLong(header.targetId);
+        buffer.putLong(header.sourceId);
+        buffer.putLong(header.requestId);
+        buffer.putLong(header.responseForRequestId);
         buffer.putInt(serializedBody.length);
         buffer.put(serializedBody);
         buffer.flip();
         return buffer;
     }
 
+
+    /**
+     * Class describes message header data. This data used for message pre processing
+     */
+    public class Header {
+        private int messageType;
+        private int status = 0;
+
+        private long targetId = -1;
+        private long sourceId = -1;
+
+        private long requestId = -1;
+        private long responseForRequestId = -1;
+
+        private Header() {
+        }
+
+        public MessageTypeTag getMessageType() {
+            return MessageTypeTag.values()[messageType];
+        }
+
+        public void setMessageType(MessageTypeTag messageType) {
+            this.messageType = messageType.ordinal();
+        }
+
+        public StatusTag getStatus() {
+            return StatusTag.values()[status];
+        }
+
+        public void setStatus(StatusTag status) {
+            this.status = status.ordinal();
+        }
+
+        public long getTargetId() {
+            return targetId;
+        }
+
+        public void setTargetId(long targetId) {
+            this.targetId = targetId;
+        }
+
+        public long getSourceId() {
+            return sourceId;
+        }
+
+        public void setSourceId(long sourceId) {
+            this.sourceId = sourceId;
+        }
+
+        public long getRequestId() {
+            return requestId;
+        }
+
+        public void setRequestId(long requestId) {
+            this.requestId = requestId;
+        }
+
+        public long getResponseForRequestId() {
+            return responseForRequestId;
+        }
+
+        public void setResponseForRequestId(long responseForRequestId) {
+            this.responseForRequestId = responseForRequestId;
+        }
+    }
 }

@@ -16,7 +16,7 @@ public final class ServerMessageParser  extends AbstractMessageParser {
 
     @Override
     protected Message prepareNewMessage(Message message) {
-        message.setSourceId(associatedConnectionId);
+        message.getHeader().setSourceId(associatedConnectionId);
         return message;
     }
 }

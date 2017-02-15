@@ -73,7 +73,7 @@ public class Server<I extends AbstractServerInterface> extends AbstractEndpoint 
         do {
             Message nextMessage = super.getNextReadyMessage();
 
-            if (connections.containsKey(nextMessage.getSourceId())) {
+            if (connections.containsKey(nextMessage.getHeader().getSourceId())) {
                 return nextMessage;
             }
         } while (true);

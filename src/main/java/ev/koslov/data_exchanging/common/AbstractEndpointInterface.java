@@ -1,14 +1,16 @@
 package ev.koslov.data_exchanging.common;
 
 
-import ev.koslov.data_exchanging.components.MessageFabric;
-import ev.koslov.data_exchanging.components.Request;
 import ev.koslov.data_exchanging.components.Message;
+import ev.koslov.data_exchanging.components.ResponseMessageBody;
+import ev.koslov.data_exchanging.components.tags.MessageTypeTag;
+import ev.koslov.data_exchanging.components.tags.StatusTag;
 import ev.koslov.data_exchanging.exceptions.DeniedException;
 import ev.koslov.data_exchanging.exceptions.InvalidTagException;
 import ev.koslov.data_exchanging.exceptions.RequestException;
 import ev.koslov.data_exchanging.exceptions.TimeoutException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,11 +24,9 @@ import java.util.Map;
 public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
     private E endpoint;
     private Map<Long, Request> requestsMap;
-    private MessageFabric messageFabric;
 
     protected AbstractEndpointInterface() {
         this.requestsMap = new HashMap<Long, Request>();
-        this.messageFabric = new MessageFabric();
     }
 
     /**
@@ -36,6 +36,10 @@ public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
      */
     final void setEndpoint(E endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public final E getEndpoint() {
+        return endpoint;
     }
 
     /**
@@ -53,7 +57,7 @@ public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
     }
 
      /**
-     * Registers message as request for remote side. Only theese message tags ({@link Message#getMessageType()}) are allowed:
+     * Registers message as request for remote side. Only theese message tags ({@link Message.Header#getMessageType()}) are allowed:
      * <li>
      *     <ul>{@link ev.koslov.data_exchanging.components.tags.MessageTypeTag#CLIENT_TO_CLIENT_REQUEST}</ul>
      *     <ul>{@link ev.koslov.data_exchanging.components.tags.MessageTypeTag#CLIENT_TO_SERVER_REQUEST}</ul>
@@ -65,8 +69,8 @@ public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
      *
      */
     private void registerRequest(Message requestMessage) throws InvalidTagException {
-        if (!requestMessage.getMessageType().name().endsWith("REQUEST")) {
-            throw new InvalidTagException("Wrong message type tag: "+requestMessage.getMessageType()+". Only request tags are allowed.");
+        if (!requestMessage.getHeader().getMessageType().name().endsWith("REQUEST")) {
+            throw new InvalidTagException("Wrong message type tag: "+requestMessage.getHeader().getMessageType()+". Only request tags are allowed.");
         }
         Request request = new Request(requestMessage);
         requestsMap.put(request.getRequestId(), request);
@@ -92,7 +96,7 @@ public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
     private Message waitResponse(Message requestMessage, long timeout) throws InterruptedException, RequestException {
 
         //getting request, associated with request message
-        Request request = requestsMap.get(requestMessage.getRequestId());
+        Request request = requestsMap.get(requestMessage.getHeader().getRequestId());
 
         //blocking invoked thread for timeout
         synchronized (request) {
@@ -107,12 +111,12 @@ public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
         if (request.getResponseMessage() != null) {
 
             //getting response message and checking its status
-            Message message = request.getResponseMessage();
+            Message responseMessage = request.getResponseMessage();
 
             //TODO: add response message status processing
-            switch (message.getStatus()) {
+            switch (responseMessage.getHeader().getStatus()) {
                 case OK: {
-                    return message;
+                    return responseMessage;
                 }
                 case DENIED: {
                     throw new DeniedException();
@@ -137,9 +141,11 @@ public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
      * @param responseMessage message to associate with request
      */
     final void processResponse(Message responseMessage) {
-        if (requestsMap.containsKey(responseMessage.getResponseForRequestId())) {
+        Message.Header header = responseMessage.getHeader();
 
-            Request request = requestsMap.get(responseMessage.getResponseForRequestId());
+        if (requestsMap.containsKey(header.getResponseForRequestId())) {
+
+            Request request = requestsMap.get(header.getResponseForRequestId());
 
             if (request != null) {
                 request.setResponseMessage(responseMessage);
@@ -165,32 +171,84 @@ public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
      */
     abstract void processRequest(Message requestMessage);
 
-    public final E getEndpoint() {
-        return endpoint;
-    }
 
     /**
      * sends message to associated connection
      * @param messageToSend message to append to outboxing queue
      */
-    public abstract void send(Message messageToSend);
+    abstract void send(Message messageToSend);
+
+
+    //NEW METHODS!!!!!!!
 
     /**
      * Blocking method. Sequentially invokes theese methods {@link AbstractEndpointInterface#registerRequest(Message)},
      * {@link AbstractEndpointInterface#send(Message)} and {@link AbstractEndpointInterface#waitResponse(Message, long)}
      * @param message message to append to outboxing queue
      * @param timeout operation timeout.
-     * @return result of message processing
+     * @return result of message processing represented by ResponseMessageBody
      * @throws InterruptedException
      * @throws RequestException if no message had been received or received message with not {@link ev.koslov.data_exchanging.components.tags.StatusTag#OK} tag.
      */
-    public final Message request(Message message, long timeout) throws InterruptedException, RequestException {
+    final ResponseMessageBody request(Message message, long timeout) throws InterruptedException, RequestException, IOException, ClassNotFoundException {
         registerRequest(message);
         send(message);
-        return waitResponse(message, timeout);
+        Message responseBody = waitResponse(message, timeout);
+
+        return responseBody.deserializeBody();
     }
 
-    public final MessageFabric getMessageFabric() {
-        return messageFabric;
+    public final void response(Message.Header requestHeader, StatusTag statusTag, ResponseMessageBody messageBody) throws IOException {
+        Message responseMessage = new Message();
+        Message.Header responseHeader = responseMessage.getHeader();
+        switch (requestHeader.getMessageType()) {
+            case SERVER_TO_CLIENT_REQUEST: {
+                responseHeader.setMessageType(MessageTypeTag.CLIENT_TO_SERVER_RESPONSE);
+                break;
+            }
+            case CLIENT_TO_SERVER_REQUEST: {
+                responseHeader.setMessageType(MessageTypeTag.SERVER_TO_CLIENT_RESPONSE);
+                break;
+            }
+            case CLIENT_TO_CLIENT_REQUEST: {
+                responseHeader.setMessageType(MessageTypeTag.CLIENT_TO_CLIENT_RESPONSE);
+                break;
+            }
+        }
+
+        responseHeader.setTargetId(requestHeader.getSourceId());
+        responseHeader.setStatus(statusTag);
+        responseHeader.setResponseForRequestId(requestHeader.getRequestId());
+
+        responseMessage.setBody(messageBody);
+
+        send(responseMessage);
+    }
+
+    private class Request {
+        private long requestId;
+        private Message responseMessage;
+
+        public Request(Message requestMessage) {
+            this.requestId = System.nanoTime();
+            requestMessage.getHeader().setRequestId(requestId);
+            //TODO: set request ID to message
+        }
+
+        public long getRequestId() {
+            return requestId;
+        }
+
+        public Message getResponseMessage() {
+            return responseMessage;
+        }
+
+        public void setResponseMessage(Message responseMessage) {
+            if (responseMessage.getHeader().getResponseForRequestId() == requestId) {
+                this.responseMessage = responseMessage;
+            } else {
+                throw new IllegalArgumentException("Response message is not for this request: " + responseMessage.getHeader().getResponseForRequestId() + "!=" + requestId);
+            }
+        }
     }
 }

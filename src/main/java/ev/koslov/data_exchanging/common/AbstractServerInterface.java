@@ -2,9 +2,14 @@ package ev.koslov.data_exchanging.common;
 
 
 import ev.koslov.data_exchanging.components.Message;
+import ev.koslov.data_exchanging.components.RequestMessageBody;
+import ev.koslov.data_exchanging.components.ResponseMessageBody;
 import ev.koslov.data_exchanging.components.tags.MessageTypeTag;
+import ev.koslov.data_exchanging.exceptions.RequestException;
 import ev.koslov.data_exchanging.server.ServerConnection;
 import ev.koslov.data_exchanging.server.Server;
+
+import java.io.IOException;
 
 
 public abstract class AbstractServerInterface extends AbstractEndpointInterface<Server> {
@@ -12,42 +17,53 @@ public abstract class AbstractServerInterface extends AbstractEndpointInterface<
 
     @Override
     final boolean isResponse(Message responseMessage) {
-        return responseMessage.getMessageType().equals(MessageTypeTag.CLIENT_TO_SERVER_RESPONSE);
+        return responseMessage.getHeader().getMessageType().equals(MessageTypeTag.CLIENT_TO_SERVER_RESPONSE);
     }
 
     @Override
     final void processRequest(Message requestMessage) {
-        switch (requestMessage.getMessageType()) {
+        switch (requestMessage.getHeader().getMessageType()) {
             case CLIENT_TO_SERVER_REQUEST: {
                 processRequestFromClient(requestMessage);
                 break;
             }
-            case CLIENT_TO_CLIENT_REQUEST: {
-                processRequestFromClientToClient(requestMessage);
-                break;
-            }
+            case CLIENT_TO_CLIENT_REQUEST:
             case CLIENT_TO_CLIENT_RESPONSE: {
-                processResponseFromClientToClient(requestMessage);
+                processMessageFromClientToClient(requestMessage);
                 break;
             }
             default: {
-                throw new UnsupportedOperationException("This packet type can't be processed on server side: " + requestMessage.getMessageType());
+                throw new UnsupportedOperationException("This packet type can't be processed on server side: " + requestMessage.getHeader().getMessageType());
             }
         }
     }
 
     @Override
-    public final void send(Message messageToSend) {
-        ServerConnection connection = getEndpoint().getConnection(messageToSend.getTargetId());
+    final void send(Message messageToSend) {
+        ServerConnection connection = getEndpoint().getConnection(messageToSend.getHeader().getTargetId());
         if (connection != null) {
             connection.sendMessage(messageToSend);
         }
     }
 
+    public ResponseMessageBody serverToClientRequestMessage(long targetId, RequestMessageBody requestMessageBody, long timeout) throws IOException, InterruptedException, ClassNotFoundException, RequestException {
+        Message message = new Message();
+        message.getHeader().setMessageType(MessageTypeTag.SERVER_TO_CLIENT_REQUEST);
+        message.getHeader().setTargetId(targetId);
+        message.setBody(requestMessageBody);
+        return request(message, timeout);
+    }
 
+    /**
+     * Processes requests from client to server
+     * @param request request to process
+     */
     protected abstract void processRequestFromClient(Message request);
 
-    protected abstract void processRequestFromClientToClient(Message request);
+    /**
+     * Processes messages from client to another client (after processing message should be forwarded to client)
+     * @param request message to process
+     */
+    protected abstract void processMessageFromClientToClient(Message request);
 
-    protected abstract void processResponseFromClientToClient(Message request);
 }

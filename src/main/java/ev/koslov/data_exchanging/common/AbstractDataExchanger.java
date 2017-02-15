@@ -75,6 +75,9 @@ public abstract class AbstractDataExchanger<T extends AbstractConnection> implem
                         @SuppressWarnings("unchecked")
                         T connection = (T) key.attachment();
 
+                        //getting selected channel from a selection key
+                        SocketChannel selectedChannel = (SocketChannel) key.channel();
+
                         try {
 
                             //Reading from selected channel
@@ -82,7 +85,7 @@ public abstract class AbstractDataExchanger<T extends AbstractConnection> implem
                                 //Reading data from socketChannel
                                 readBuffer.clear();
 
-                                if (connection.getChannel().read(readBuffer) == -1){
+                                if (selectedChannel.read(readBuffer) == -1){
                                     throw new IOException("Channel was closed from remote side.");
                                 }
 
@@ -95,7 +98,7 @@ public abstract class AbstractDataExchanger<T extends AbstractConnection> implem
 
                             //Writing data to selected channel if exist
                             if (connection.isConnected() && connection.hasOutboxingMessages() && key.isWritable()) {
-                                connection.getChannel().write(connection.getNextOutboxingMessage());
+                                selectedChannel.write(connection.getNextOutboxingMessage());
                             }
 
                         } catch (Exception e) {

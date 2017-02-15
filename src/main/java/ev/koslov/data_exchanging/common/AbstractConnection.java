@@ -66,16 +66,13 @@ public abstract class AbstractConnection {
         messageParser.appendDataForParsing(dataToAppend);
     }
 
-    final SocketChannel getChannel() {
-        return channel;
-    }
-
     /**
      * Adds message object to output queue. Invoking this method does not guarantee that message will be sent immediately
      * Message will be sent as soon as possible o will be discarded if some IOException occurs (closed socket, etc.)
      *
      * @param message message to send
      */
+    //TODO: add blocking SendMessage
     protected final void sendMessage(Message message) {
         if (selectionKey.isValid()) {
 
@@ -100,8 +97,6 @@ public abstract class AbstractConnection {
 
         }
     }
-
-    //TODO: add blocking SendMessage
 
     /**
      * Tells if outboxing messageQueue has some more data to send
@@ -145,14 +140,6 @@ public abstract class AbstractConnection {
     }
 
     /**
-     * Returns a connection state
-     * @return true is assigned selection key is valid and channel is open, false otherwise
-     */
-    public final boolean isConnected() {
-        return selectionKey.isValid() && channel.isOpen();
-    }
-
-    /**
      * Close connection and release any resources bound to it
      */
     protected void close() {
@@ -169,15 +156,23 @@ public abstract class AbstractConnection {
 
     }
 
+    /**
+     * Returns a connection state
+     * @return true is assigned selection key is valid and channel is open, false otherwise
+     */
+    public boolean isConnected() {
+        return selectionKey.isValid() && channel.isOpen();
+    }
+
     public Properties getProperties() {
         return properties;
     }
 
-    public Object attachment() {
-        return attachment;
-    }
-
     public void attach(Object attachment) {
         this.attachment = attachment;
+    }
+
+    public Object attachment() {
+        return attachment;
     }
 }
