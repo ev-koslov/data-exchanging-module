@@ -44,6 +44,7 @@ public final class MessageSorter implements Runnable {
             }
         } finally {
             endpointInterface.cancelRequests();
+            //TODO: shutdown endpoint instance
         }
     }
 }

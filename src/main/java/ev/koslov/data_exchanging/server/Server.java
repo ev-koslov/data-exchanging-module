@@ -125,7 +125,7 @@ public class Server extends AbstractEndpoint {
 
                 }
 
-            } catch (Exception e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 //TODO: check how to watch for server stops listening for new connections.
 
