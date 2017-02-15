@@ -75,7 +75,7 @@ public abstract class AbstractConnection {
      * @param message message to send
      */
     //TODO: add blocking SendMessage
-    protected final void sendMessage(Message message) {
+    public final void sendMessage(Message message) {
         if (selectionKey.isValid()) {
 
             //TODO: how to set limited size of outboxing message queue
