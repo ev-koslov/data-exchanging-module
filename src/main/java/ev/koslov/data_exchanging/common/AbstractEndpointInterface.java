@@ -10,7 +10,6 @@ import ev.koslov.data_exchanging.exceptions.InvalidTagException;
 import ev.koslov.data_exchanging.exceptions.RequestException;
 import ev.koslov.data_exchanging.exceptions.TimeoutException;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +37,7 @@ abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
         this.endpoint = endpoint;
     }
 
-    public final E getEndpoint() {
+    public E getEndpoint() {
         return endpoint;
     }
 
@@ -190,7 +189,7 @@ abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
      * @throws InterruptedException
      * @throws RequestException if no message had been received or received message with not {@link ev.koslov.data_exchanging.components.tags.StatusTag#OK} tag.
      */
-    final ResponseMessageBody request(Message message, long timeout) throws InterruptedException, RequestException, IOException, ClassNotFoundException {
+    final ResponseMessageBody request(Message message, long timeout) throws InterruptedException, RequestException {
         registerRequest(message);
         send(message);
         Message responseBody = waitResponse(message, timeout);
@@ -198,7 +197,7 @@ abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
         return responseBody.deserializeBody();
     }
 
-    public final void response(Message.Header requestHeader, StatusTag statusTag, ResponseMessageBody messageBody) throws IOException {
+    public final void response(Message.Header requestHeader, StatusTag statusTag, ResponseMessageBody messageBody) {
         Message responseMessage = new Message();
         Message.Header responseHeader = responseMessage.getHeader();
         switch (requestHeader.getMessageType()) {

@@ -1,6 +1,7 @@
 package ev.koslov.data_exchanging.common;
 
 
+import ev.koslov.data_exchanging.client.Client;
 import ev.koslov.data_exchanging.components.Message;
 import ev.koslov.data_exchanging.components.RequestMessageBody;
 import ev.koslov.data_exchanging.components.ResponseMessageBody;
@@ -14,6 +15,26 @@ import java.io.IOException;
 
 public abstract class AbstractServerInterface extends AbstractEndpointInterface<Server> {
 
+    public void startServer(int port) throws IOException {
+        if (super.getEndpoint() != null && super.getEndpoint().isRunning()){
+            throw new UnsupportedOperationException("Server is already running.");
+        }
+
+        //just creating server instance. It will be associated with current interface in constructor
+        new Server(port, this);
+    }
+
+    public boolean isServerRunning() {
+        Server server = getEndpoint();
+        return server != null && server.isRunning();
+    }
+
+    public void stopServer() {
+        Server server = getEndpoint();
+        if (server != null && server.isRunning()){
+            server.shutdown();
+        }
+    }
 
     @Override
     final boolean isResponse(Message responseMessage) {
@@ -46,7 +67,7 @@ public abstract class AbstractServerInterface extends AbstractEndpointInterface<
         }
     }
 
-    public void serverToClientRequest(long targetId, RequestMessageBody requestMessageBody) throws IOException {
+    public void serverToClientRequest(long targetId, RequestMessageBody requestMessageBody) {
         Message message = new Message();
         message.getHeader().setMessageType(MessageTypeTag.SERVER_TO_CLIENT_REQUEST);
         message.getHeader().setTargetId(targetId);
@@ -54,7 +75,7 @@ public abstract class AbstractServerInterface extends AbstractEndpointInterface<
         send(message);
     }
 
-    public ResponseMessageBody serverToClientRequest(long targetId, RequestMessageBody requestMessageBody, long timeout) throws IOException, InterruptedException, ClassNotFoundException, RequestException {
+    public ResponseMessageBody serverToClientRequest(long targetId, RequestMessageBody requestMessageBody, long timeout) throws InterruptedException, RequestException {
         Message message = new Message();
         message.getHeader().setMessageType(MessageTypeTag.SERVER_TO_CLIENT_REQUEST);
         message.getHeader().setTargetId(targetId);

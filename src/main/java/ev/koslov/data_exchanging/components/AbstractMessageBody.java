@@ -12,7 +12,7 @@ abstract class AbstractMessageBody implements Serializable {
         this.properties = new Properties();
     }
 
-    final byte[] getBytes() throws IOException {
+    final byte[] getBytes() {
         ByteArrayOutputStream bos;
         ObjectOutputStream ous = null;
 
@@ -23,6 +23,10 @@ abstract class AbstractMessageBody implements Serializable {
             ous.writeObject(this);
 
             return bos.toByteArray();
+
+        } catch (IOException e) {
+
+            throw new RuntimeException("Serialization of "+this.getClass().getName()+" failed.", e);
 
         } finally {
             if (ous != null) {
@@ -35,8 +39,8 @@ abstract class AbstractMessageBody implements Serializable {
         }
     }
 
-    public Serializable getProperty(String key) {
-        return (Serializable) properties.get(key);
+    public <S extends Serializable> S getProperty(String key) {
+        return (S) properties.get(key);
     }
 
     public void setProperty(String key, Serializable value) {

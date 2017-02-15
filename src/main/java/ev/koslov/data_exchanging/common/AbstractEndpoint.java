@@ -11,12 +11,15 @@ public abstract class AbstractEndpoint {
     private final LinkedBlockingQueue<Message> readyMessages;
     private final ExecutorService executorService;
 
+    private AbstractEndpointInterface endpointInterface;
+
     /**
      * Creates instance of endpoint using given {@link AbstractEndpointInterface} implementation.
      * @param endpointInterface implementation of {@link AbstractEndpointInterface} which is used to communicate with
      *                          other side of endpoint (remote side in network).
      */
     protected AbstractEndpoint(AbstractEndpointInterface endpointInterface) {
+        this.endpointInterface = endpointInterface;
         readyMessages = new LinkedBlockingQueue<Message>();
         executorService = Executors.newCachedThreadPool();
 
@@ -53,6 +56,8 @@ public abstract class AbstractEndpoint {
     protected void shutdown() {
         executorService.shutdownNow();
         readyMessages.clear();
+        //destroying association between endpoint and endpoint interface
+        endpointInterface.setEndpoint(null);
     }
 
     protected boolean isRunning() {
