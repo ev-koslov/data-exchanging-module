@@ -30,6 +30,7 @@ public abstract class AbstractConnection {
 
     /**
      * Creates server connection instance.
+     *
      * @param selectionKey  selection key for newly created socketChannel
      * @param messageParser associated message parser
      */
@@ -59,6 +60,7 @@ public abstract class AbstractConnection {
 
     /**
      * Delegated method {@link AbstractMessageParser#appendDataForParsing(ByteBuffer)}
+     *
      * @param dataToAppend data to append to parsing queue
      * @throws ParseException if expected and actual data are not match
      */
@@ -73,7 +75,7 @@ public abstract class AbstractConnection {
      * @param message message to send
      */
     //TODO: add blocking SendMessage
-    protected final void sendMessage(Message message) {
+    public final void sendMessage(Message message) {
         if (selectionKey.isValid()) {
 
             //TODO: how to set limited size of outboxing message queue
@@ -102,6 +104,7 @@ public abstract class AbstractConnection {
      * Tells if outboxing messageQueue has some more data to send
      * and removes already sent data (empty byteBuffers).
      * To make data correct should be invoked every time before {@link AbstractConnection#getNextOutboxingMessage()}
+     *
      * @return true if and only if outboxingMessage list contains at least one non empty byteBuffer
      */
     final boolean hasOutboxingMessages() {
@@ -131,6 +134,7 @@ public abstract class AbstractConnection {
      * Get next message to send
      * User must invoke {@link AbstractConnection#hasOutboxingMessages()} method first and ensure that method returned True.
      * Otherwise {@link NullPointerException} may be thrown.
+     *
      * @return {@link ByteBuffer} containing prepared message bytes.
      */
     final ByteBuffer getNextOutboxingMessage() {
@@ -158,6 +162,7 @@ public abstract class AbstractConnection {
 
     /**
      * Returns a connection state
+     *
      * @return true is assigned selection key is valid and channel is open, false otherwise
      */
     public boolean isConnected() {

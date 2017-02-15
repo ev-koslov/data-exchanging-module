@@ -17,15 +17,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Abstract class, which implementations are used to make communication beetwen client and server easier.
+ * Abstract class, which implementations are used to make communication between client and server easier.
  *
  * @param <E> implementation of {@link AbstractEndpoint}
  */
-public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
+abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
     private E endpoint;
-    private Map<Long, Request> requestsMap;
+    private final Map<Long, Request> requestsMap;
 
-    protected AbstractEndpointInterface() {
+    AbstractEndpointInterface() {
         this.requestsMap = new HashMap<Long, Request>();
     }
 
@@ -57,7 +57,7 @@ public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
     }
 
      /**
-     * Registers message as request for remote side. Only theese message tags ({@link Message.Header#getMessageType()}) are allowed:
+     * Registers message as request for remote side. Only these message tags ({@link Message.Header#getMessageType()}) are allowed:
      * <li>
      *     <ul>{@link ev.koslov.data_exchanging.components.tags.MessageTypeTag#CLIENT_TO_CLIENT_REQUEST}</ul>
      *     <ul>{@link ev.koslov.data_exchanging.components.tags.MessageTypeTag#CLIENT_TO_SERVER_REQUEST}</ul>
@@ -182,7 +182,7 @@ public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
     //NEW METHODS!!!!!!!
 
     /**
-     * Blocking method. Sequentially invokes theese methods {@link AbstractEndpointInterface#registerRequest(Message)},
+     * Blocking method. Sequentially invokes these methods {@link AbstractEndpointInterface#registerRequest(Message)},
      * {@link AbstractEndpointInterface#send(Message)} and {@link AbstractEndpointInterface#waitResponse(Message, long)}
      * @param message message to append to outboxing queue
      * @param timeout operation timeout.
@@ -226,7 +226,7 @@ public abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
     }
 
     private class Request {
-        private long requestId;
+        private final long requestId;
         private Message responseMessage;
 
         public Request(Message requestMessage) {

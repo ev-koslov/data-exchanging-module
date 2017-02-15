@@ -2,12 +2,7 @@ package ev.koslov.data_exchanging.common;
 
 
 import ev.koslov.data_exchanging.components.Message;
-
-import java.lang.reflect.Constructor;
-import java.nio.channels.SelectionKey;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 
 /**
  * Main abstract class of DataExchanging module. Implementations are used to communicate with each other using SocketChannel.
@@ -15,8 +10,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 public abstract class AbstractEndpoint {
     private final LinkedBlockingQueue<Message> readyMessages;
     private final ExecutorService executorService;
-
-    private final MessageSorter messageSorter;
 
     /**
      * Creates instance of endpoint using given {@link AbstractEndpointInterface} implementation.
@@ -30,20 +23,27 @@ public abstract class AbstractEndpoint {
         //make current endpoint associated with given endpoint interface
         endpointInterface.setEndpoint(this);
 
-        this.messageSorter = new MessageSorter(this, endpointInterface);
+        MessageSorter messageSorter = new MessageSorter(this, endpointInterface);
+
+        executeTask(messageSorter);
     }
 
+    protected final Future executeTask(Runnable runnable) {
+        if (runnable == null) {
+            throw new NullPointerException();
+        }
+        return executorService.submit(runnable);
+    }
+
+    protected final <V> Future<V> executeTask(Callable<V> callable) {
+        if (callable == null) {
+            throw new NullPointerException();
+        }
+        return executorService.submit(callable);
+    }
 
     protected final LinkedBlockingQueue<Message> getReadyMessages() {
         return readyMessages;
-    }
-
-    protected final ExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    protected final MessageSorter getMessageSorter() {
-        return messageSorter;
     }
 
     protected Message getNextReadyMessage() throws InterruptedException {
@@ -55,12 +55,7 @@ public abstract class AbstractEndpoint {
         readyMessages.clear();
     }
 
-    /**
-     * Get an associated {@link AbstractEndpointInterface} implementation.
-     * @return bound {@link AbstractEndpointInterface} implementation
-     */
-
-    public boolean isRunning() {
+    protected boolean isRunning() {
         return !this.executorService.isShutdown();
     }
 

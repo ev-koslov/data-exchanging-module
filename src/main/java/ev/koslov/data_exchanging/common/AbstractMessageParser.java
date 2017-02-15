@@ -12,7 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public abstract class AbstractMessageParser {
     private ByteBuffer parseBuffer;
-    private LinkedBlockingQueue<Message> readyMessages;
+    private final LinkedBlockingQueue<Message> readyMessages;
 
     protected AbstractMessageParser(LinkedBlockingQueue<Message> readyMessages) {
         parseBuffer = ByteBuffer.allocate(20000);
