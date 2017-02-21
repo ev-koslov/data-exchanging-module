@@ -15,7 +15,7 @@ public final class Client extends AbstractEndpoint {
         try {
             SocketChannel channel = SocketChannel.open(new InetSocketAddress(host, port));
 
-            ClientDataExchanger dataExchanger = new ClientDataExchanger();
+            ClientEmbeddedDataExchanger dataExchanger = new ClientEmbeddedDataExchanger();
             SelectionKey key = dataExchanger.registerChannel(channel);
             ClientMessageParser messageParser = new ClientMessageParser(getReadyMessages());
 
@@ -47,9 +47,9 @@ public final class Client extends AbstractEndpoint {
         super.shutdown();
     }
 
-    private final class ClientDataExchanger extends AbstractDataExchanger<ClientConnection> {
+    private final class ClientEmbeddedDataExchanger extends AbstractDataExchanger<ClientConnection> {
 
-        ClientDataExchanger() throws IOException {
+        ClientEmbeddedDataExchanger() throws IOException {
             super();
         }
 

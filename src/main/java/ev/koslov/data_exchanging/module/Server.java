@@ -27,7 +27,7 @@ public final class Server extends AbstractEndpoint {
 
         try {
 
-            ServerDataExchanger dataExchanger = new ServerDataExchanger();
+            ServerEmbeddedDataExchanger dataExchanger = new ServerEmbeddedDataExchanger();
             NewConnectionsListener newConnectionsListener = new NewConnectionsListener(port, dataExchanger);
 
             executeTask(dataExchanger);
@@ -93,9 +93,9 @@ public final class Server extends AbstractEndpoint {
 
     private final class NewConnectionsListener implements Runnable {
         private ServerSocketChannel serverSocketChannel;
-        private ServerDataExchanger serverDataExchanger;
+        private ServerEmbeddedDataExchanger serverDataExchanger;
 
-        NewConnectionsListener(int port, ServerDataExchanger dataExchanger) throws IOException {
+        NewConnectionsListener(int port, ServerEmbeddedDataExchanger dataExchanger) throws IOException {
             serverSocketChannel = ServerSocketChannel.open().bind(new InetSocketAddress(port));
             serverDataExchanger = dataExchanger;
         }
@@ -139,9 +139,9 @@ public final class Server extends AbstractEndpoint {
     }
 
 
-    private final class ServerDataExchanger extends AbstractDataExchanger<ServerConnection>{
+    private final class ServerEmbeddedDataExchanger extends AbstractDataExchanger<ServerConnection>{
 
-        ServerDataExchanger() throws IOException {
+        ServerEmbeddedDataExchanger() throws IOException {
             super();
         }
 
