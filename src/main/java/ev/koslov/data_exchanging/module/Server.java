@@ -147,7 +147,7 @@ public final class Server extends AbstractEndpoint {
 
         @Override
         void closeConnection(ServerConnection connection) {
-
+            Server.this.closeConnection(connection.getId());
         }
     }
 }
