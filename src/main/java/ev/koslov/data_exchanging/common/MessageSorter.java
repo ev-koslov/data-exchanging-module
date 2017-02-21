@@ -3,12 +3,12 @@ package ev.koslov.data_exchanging.common;
 
 import ev.koslov.data_exchanging.components.Message;
 
-public final class MessageSorter implements Runnable {
+final class MessageSorter implements Runnable {
 
     private final AbstractEndpoint endpoint;
     private final AbstractEndpointInterface endpointInterface;
 
-    public MessageSorter(AbstractEndpoint endpoint, AbstractEndpointInterface endpointInterface) {
+    MessageSorter(AbstractEndpoint endpoint, AbstractEndpointInterface endpointInterface) {
         this.endpoint = endpoint;
         this.endpointInterface = endpointInterface;
     }
