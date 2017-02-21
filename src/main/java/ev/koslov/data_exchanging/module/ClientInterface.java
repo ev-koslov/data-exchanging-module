@@ -1,7 +1,6 @@
-package ev.koslov.data_exchanging.common;
+package ev.koslov.data_exchanging.module;
 
 
-import ev.koslov.data_exchanging.client.Client;
 import ev.koslov.data_exchanging.components.Message;
 import ev.koslov.data_exchanging.components.RequestBody;
 import ev.koslov.data_exchanging.components.ResponseBody;
@@ -9,15 +8,15 @@ import ev.koslov.data_exchanging.components.tags.MessageTypeTag;
 
 import java.io.IOException;
 
-public abstract class AbstractClientInterface extends AbstractEndpointInterface<Client> {
+public abstract class ClientInterface extends AbstractEndpointInterface<Client> {
 
-    public void connect(String host, int port) throws IOException {
+    public Client connect(String host, int port) throws IOException {
         if (super.getAssociatedEndpoint() != null && super.getAssociatedEndpoint().isRunning()){
             throw new UnsupportedOperationException("Client is already running.");
         }
 
         //just creating client instance. It will be associated with current interface in constructor
-        new Client(host, port, this);
+        return new Client(host, port, this);
     }
 
     public boolean isConnected() {

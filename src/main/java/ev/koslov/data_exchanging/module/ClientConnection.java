@@ -1,9 +1,4 @@
-package ev.koslov.data_exchanging.client;
-
-
-
-import ev.koslov.data_exchanging.common.AbstractConnection;
-import ev.koslov.data_exchanging.common.AbstractMessageParser;
+package ev.koslov.data_exchanging.module;
 
 import java.nio.channels.SelectionKey;
 
@@ -16,8 +11,4 @@ public final class ClientConnection extends AbstractConnection {
         super(selectionKey, messageParser);
     }
 
-    @Override
-    protected void close() {
-        super.close();
-    }
 }

@@ -1,8 +1,5 @@
-package ev.koslov.data_exchanging.server;
+package ev.koslov.data_exchanging.module;
 
-
-import ev.koslov.data_exchanging.common.AbstractConnection;
-import ev.koslov.data_exchanging.common.AbstractMessageParser;
 
 import java.nio.channels.SelectionKey;
 
@@ -17,10 +14,5 @@ public class ServerConnection extends AbstractConnection {
 
     public long getId() {
         return id;
-    }
-
-    @Override
-    protected void close() {
-        super.close();
     }
 }

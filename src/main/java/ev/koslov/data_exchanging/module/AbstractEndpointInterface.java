@@ -1,4 +1,4 @@
-package ev.koslov.data_exchanging.common;
+package ev.koslov.data_exchanging.module;
 
 
 import ev.koslov.data_exchanging.components.Message;
@@ -34,7 +34,7 @@ abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
      *
      * @param associatedEndpoint endpoint to associate with.
      */
-    final void setAssociatedEndpoint(E associatedEndpoint) {
+    final void associateEndpoint(E associatedEndpoint) {
         this.associatedEndpoint = associatedEndpoint;
     }
 
@@ -56,25 +56,11 @@ abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
         requestsMap.clear();
     }
 
-     /**
-     * Registers message as request for remote side. Only these message tags ({@link Message.Header#getMessageType()}) are allowed:
-     * <li>
-     *     <ul>{@link ev.koslov.data_exchanging.components.tags.MessageTypeTag#CLIENT_TO_CLIENT_REQUEST}</ul>
-     *     <ul>{@link ev.koslov.data_exchanging.components.tags.MessageTypeTag#CLIENT_TO_SERVER_REQUEST}</ul>
-     *     <ul>{@link ev.koslov.data_exchanging.components.tags.MessageTypeTag#SERVER_TO_CLIENT_REQUEST}</ul>
-     * </li>
-      * <br> Otherwise {@link InvalidTagException} will be thrown.
-     * @param requestMessage message to register.
-     * @throws InvalidTagException if message has not allowed tag.
-     *
+    /**
+     * Processes request from the remote side.
+     * @param requestMessage message to process
      */
-    private void registerRequest(Message requestMessage) throws InvalidTagException {
-        if (!requestMessage.getHeader().getMessageType().name().endsWith("REQUEST")) {
-            throw new InvalidTagException("Wrong message type tag: "+requestMessage.getHeader().getMessageType()+". Only request tags are allowed.");
-        }
-        Request request = new Request(requestMessage);
-        requestsMap.put(request.getRequestId(), request);
-    }
+    abstract void processRequest(Message requestMessage);
 
     //TODO: Подумать, как сделать методы registerRequest, waitResponse переопределяемыми в подклассах. Например, на сервере
     //TODO: если приходит запрос от клиента к другому клиенту, создаем обьект запроса на сервере на основе сообщение,
@@ -86,54 +72,11 @@ abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
     //TODO: Если случается ошибка (таймаут и т.п.), то заполнаяем в сообещнии стату и отправляем клиенту.
 
     /**
-     * Blocking method that wait for response is being processed on the remote side.
-     * @param requestMessage request message
-     * @param timeout operation timeout. When time is up, {@link TimeoutException} will be thrown.
-     * @return response message.
-     * @throws InterruptedException
-     * @throws RequestException if no message had been received or received message with not {@link ev.koslov.data_exchanging.components.tags.StatusTag#OK} tag.
+     * Tests if message if response and can be processed in invoked implementations
+     * @param responseMessage message to test
+     * @return true if message can be processed as response on "this" side
      */
-    private Message waitResponse(Message requestMessage, long timeout) throws InterruptedException, RequestException {
-
-        //getting request, associated with request message
-        Request request = requestsMap.get(requestMessage.getHeader().getRequestId());
-
-        //blocking invoked thread for timeout
-        synchronized (request) {
-            request.wait(timeout);
-        }
-
-        //after time is out or notification, removing associated request from requestsMap.
-        requestsMap.remove(request.getRequestId());
-
-
-
-        if (request.getResponseMessage() != null) {
-
-            //getting response message and checking its status
-            Message responseMessage = request.getResponseMessage();
-
-            //TODO: add response message status processing
-            switch (responseMessage.getHeader().getStatus()) {
-                case OK: {
-                    return responseMessage;
-                }
-                case DENIED: {
-                    throw new DeniedException();
-                }
-                case TIMEOUT: {
-                    throw new TimeoutException();
-                }
-                default: {
-                    throw new RuntimeException("INVALID STATUS CODE");
-                }
-            }
-
-        } else {
-            //if request has no response message, throwing TimeoutException
-            throw new TimeoutException();
-        }
-    }
+    abstract boolean isResponse(Message responseMessage);
 
     /**
      * Invocation of this method will associate received message with request and notify waiting thread that response is received
@@ -159,70 +102,104 @@ abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
     }
 
     /**
-     * Tests if message if response and can be processed in invoked implementations
-     * @param responseMessage message to test
-     * @return true if message can be processed as response on "this" side
-     */
-    abstract boolean isResponse(Message responseMessage);
-
-    /**
-     * Processes request from the remote side.
-     * @param requestMessage message to process
-     */
-    abstract void processRequest(Message requestMessage);
-
-
-    /**
      * sends message to associated connection
      * @param messageToSend message to append to outboxing queue
      */
     abstract void send(Message messageToSend) throws IOException;
 
 
-    //NEW METHODS!!!!!!!
-
-    /**
-     * Blocking method. Sequentially invokes these methods {@link AbstractEndpointInterface#registerRequest(Message)},
-     * {@link AbstractEndpointInterface#send(Message)} and {@link AbstractEndpointInterface#waitResponse(Message, long)}
-     * @param message message to append to outboxing queue
+     /**
+     * Blocking method.
+     * @param requestMessage message to append to outboxing queue
      * @param timeout operation timeout.
      * @return result of message processing represented by ResponseBody
      * @throws InterruptedException
      * @throws RequestException if no message had been received or received message with not {@link ev.koslov.data_exchanging.components.tags.StatusTag#OK} tag.
      */
-    final ResponseBody request(Message message, long timeout) throws InterruptedException, IOException {
-        registerRequest(message);
-        send(message);
-        Message responseBody = waitResponse(message, timeout);
+    final ResponseBody request(Message requestMessage, long timeout) throws InterruptedException, IOException {
+        //registering request
+        if (!requestMessage.getHeader().getMessageType().name().endsWith("REQUEST")) {
+            throw new InvalidTagException("Wrong message type tag: "+requestMessage.getHeader().getMessageType()+". Only request tags are allowed.");
+        }
+        Request request = new Request(requestMessage);
+        requestsMap.put(request.getRequestId(), request);
 
-        return responseBody.getBody();
-    }
+        //sending data
+        send(requestMessage);
 
-    public final void response(Message.Header requestHeader, StatusTag statusTag, ResponseBody messageBody) throws IOException {
-        Message responseMessage = new Message();
-        Message.Header responseHeader = responseMessage.getHeader();
-        switch (requestHeader.getMessageType()) {
-            case SERVER_TO_CLIENT_REQUEST: {
-                responseHeader.setMessageType(MessageTypeTag.CLIENT_TO_SERVER_RESPONSE);
-                break;
-            }
-            case CLIENT_TO_SERVER_REQUEST: {
-                responseHeader.setMessageType(MessageTypeTag.SERVER_TO_CLIENT_RESPONSE);
-                break;
-            }
-            case CLIENT_TO_CLIENT_REQUEST: {
-                responseHeader.setMessageType(MessageTypeTag.CLIENT_TO_CLIENT_RESPONSE);
-                break;
-            }
+        //blocking invoked thread for timeout
+        synchronized (request) {
+            request.wait(timeout);
         }
 
-        responseHeader.setTargetId(requestHeader.getSourceId());
-        responseHeader.setStatus(statusTag);
-        responseHeader.setResponseForRequestId(requestHeader.getRequestId());
+        //after time is out or notification received, removing associated request from requestsMap.
+        requestsMap.remove(request.getRequestId());
+
+        //checking if Request object has response message
+        if (request.getResponseMessage() != null) {
+
+            //getting response message and checking its status
+            Message responseMessage = request.getResponseMessage();
+
+            //TODO: add response message status processing
+            switch (responseMessage.getHeader().getStatus()) {
+                case OK: {
+                    return responseMessage.getBody();
+                }
+                case DENIED: {
+                    throw new DeniedException();
+                }
+                case TIMEOUT: {
+                    throw new TimeoutException();
+                }
+                default: {
+                    throw new RuntimeException("INVALID STATUS CODE");
+                }
+            }
+
+        } else {
+            //if request has no response message, throwing TimeoutException
+            throw new TimeoutException();
+        }
+    }
+
+    public final void response(Message.Header requestHeader, StatusTag status) throws IOException {
+        Message responseMessage = new Message();
+
+        fillMessageHeader(requestHeader, responseMessage.getHeader(), status);
+
+        send(responseMessage);
+    }
+
+    public final void response(Message.Header requestHeader, ResponseBody messageBody) throws IOException {
+        Message responseMessage = new Message();
+
+        fillMessageHeader(requestHeader, responseMessage.getHeader(), StatusTag.OK);
 
         responseMessage.setBody(messageBody);
 
         send(responseMessage);
+    }
+
+    private void fillMessageHeader(Message.Header source, Message.Header target, StatusTag status){
+        switch (source.getMessageType()) {
+            case SERVER_TO_CLIENT_REQUEST: {
+                target.setMessageType(MessageTypeTag.CLIENT_TO_SERVER_RESPONSE);
+                break;
+            }
+            case CLIENT_TO_SERVER_REQUEST: {
+                target.setMessageType(MessageTypeTag.SERVER_TO_CLIENT_RESPONSE);
+                break;
+            }
+            case CLIENT_TO_CLIENT_REQUEST: {
+                target.setMessageType(MessageTypeTag.CLIENT_TO_CLIENT_RESPONSE);
+                break;
+            }
+        }
+
+        target.setTargetId(source.getSourceId());
+        target.setResponseForRequestId(source.getRequestId());
+        target.setStatus(status);
     }
 
     private class Request {
@@ -232,7 +209,6 @@ abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
         public Request(Message requestMessage) {
             this.requestId = System.nanoTime();
             requestMessage.getHeader().setRequestId(requestId);
-            //TODO: set request ID to message
         }
 
         public long getRequestId() {

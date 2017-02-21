@@ -1,6 +1,5 @@
-package ev.koslov.data_exchanging.server;
+package ev.koslov.data_exchanging.module;
 
-import ev.koslov.data_exchanging.common.AbstractMessageParser;
 import ev.koslov.data_exchanging.components.Message;
 
 import java.util.concurrent.LinkedBlockingQueue;
@@ -15,7 +14,7 @@ final class ServerMessageParser extends AbstractMessageParser {
     }
 
     @Override
-    protected Message prepareNewMessage(Message message) {
+    Message prepareNewMessage(Message message) {
         message.getHeader().setSourceId(associatedConnectionId);
         return message;
     }

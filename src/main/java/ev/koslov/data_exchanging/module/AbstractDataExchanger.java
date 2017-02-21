@@ -1,4 +1,4 @@
-package ev.koslov.data_exchanging.common;
+package ev.koslov.data_exchanging.module;
 
 
 import java.io.IOException;
@@ -11,21 +11,23 @@ import java.util.Iterator;
 /**
  * Implementation of this class are performing data exchanging using non-blocking {@link SocketChannel} which is bound to
  * embedded selector.
+ *
  * @param <T> implementation of {@link AbstractConnection} which is used to serve data exchanging by providing {@link AbstractMessageParser}
- *           implementations for received data parsing and outboxing messages queue for data sending.
+ *            implementations for received data parsing and outboxing messages queue for data sending.
  */
-public abstract class AbstractDataExchanger<T extends AbstractConnection> implements Runnable{
+abstract class AbstractDataExchanger<T extends AbstractConnection> implements Runnable{
 
     private Selector selector;
     private ByteBuffer readBuffer;
 
-    protected AbstractDataExchanger() throws IOException {
+    AbstractDataExchanger() throws IOException {
         selector = Selector.open();
         readBuffer = ByteBuffer.allocate(1024);
     }
 
     /**
      * Performs channel registration to embedded selector for future data exchanging using given {@link SocketChannel}.
+     *
      * @param channel channel to register with selector.
      *                <br></R>ATTENTION: given socketChannel MUST NOT be registered with any selector
      *                or {@link UnsupportedOperationException} will be thrown.
@@ -34,7 +36,7 @@ public abstract class AbstractDataExchanger<T extends AbstractConnection> implem
      * {@link SelectionKey#interestOps(int)}.
      * @throws IOException if some IO exceptions are occurred during registration.
      */
-    protected SelectionKey registerChannel(SocketChannel channel) throws IOException {
+    final SelectionKey registerChannel(SocketChannel channel) throws IOException {
         if (channel.isRegistered()) {
             throw new UnsupportedOperationException("Given channel must not be registered.");
         }
@@ -45,6 +47,13 @@ public abstract class AbstractDataExchanger<T extends AbstractConnection> implem
         //register channel with internal selector and return selectionKey
         return channel.register(selector, 0);
     }
+
+    /**
+     * Closes given connection
+     *
+     * @param connection connection to close
+     */
+    abstract void closeConnection(T connection);
 
     /**
      * This {@link Runnable} implementation is used to perform loop operations in separate {@link Thread}. It performs
@@ -85,7 +94,7 @@ public abstract class AbstractDataExchanger<T extends AbstractConnection> implem
                                 //Reading data from socketChannel
                                 readBuffer.clear();
 
-                                if (selectedChannel.read(readBuffer) == -1){
+                                if (selectedChannel.read(readBuffer) == -1) {
                                     throw new IOException("Channel was closed from remote side.");
                                 }
 
@@ -125,10 +134,4 @@ public abstract class AbstractDataExchanger<T extends AbstractConnection> implem
             }
         }
     }
-
-    /**
-     * Closes given connection
-     * @param connection connection to close
-     */
-    protected abstract void closeConnection(T connection);
 }

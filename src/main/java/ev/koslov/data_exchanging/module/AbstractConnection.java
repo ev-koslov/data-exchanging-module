@@ -1,4 +1,4 @@
-package ev.koslov.data_exchanging.common;
+package ev.koslov.data_exchanging.module;
 
 
 import ev.koslov.data_exchanging.components.Message;
@@ -10,14 +10,13 @@ import java.nio.channels.SocketChannel;
 import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 /**
  * Implementations of this subclass are holding message parsing mechanism ({@link AbstractMessageParser}) and list that contains
  * byteBuffers of messages which needs to be sent using {@link AbstractDataExchanger}.
  * Implementations SHOULD NOT BE instantiated in separate of {@link AbstractEndpoint} implementations.
  */
-public abstract class AbstractConnection {
+abstract class AbstractConnection {
     private SocketChannel channel;
     private SelectionKey selectionKey;
     private AbstractMessageParser messageParser;
@@ -35,7 +34,7 @@ public abstract class AbstractConnection {
      * @param selectionKey  selection key for newly created socketChannel
      * @param messageParser associated message parser
      */
-    protected AbstractConnection(SelectionKey selectionKey, AbstractMessageParser messageParser) {
+    AbstractConnection(SelectionKey selectionKey, AbstractMessageParser messageParser) {
         if (selectionKey == null || messageParser == null) {
             throw new NullPointerException();
         }
@@ -76,7 +75,7 @@ public abstract class AbstractConnection {
      * @param message message to send
      */
     //TODO: add blocking SendMessage
-    protected final void sendMessage(Message message) {
+    final void sendMessage(Message message) {
         if (selectionKey.isValid()) {
 
             //TODO: how to set limited size of outboxing message queue
@@ -147,7 +146,7 @@ public abstract class AbstractConnection {
     /**
      * Close connection and release any resources bound to it
      */
-    protected void close() {
+    final void close() {
 
         selectionKey.cancel();
 

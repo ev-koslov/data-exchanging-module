@@ -1,8 +1,6 @@
-package ev.koslov.data_exchanging.server;
+package ev.koslov.data_exchanging.module;
 
 
-import ev.koslov.data_exchanging.common.AbstractEndpoint;
-import ev.koslov.data_exchanging.common.AbstractServerInterface;
 import ev.koslov.data_exchanging.components.Message;
 
 import java.io.IOException;
@@ -14,15 +12,14 @@ import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
-public class Server extends AbstractEndpoint {
+public final class Server extends AbstractEndpoint {
 
     private boolean running;
-    private ServerDataExchanger dataExchanger;
 
     private final LinkedBlockingQueue<Long> newConnectionIds, closedConnectionIds;
     private final Map<Long, ServerConnection> connections;
 
-    public Server(int port, AbstractServerInterface serverInterface) throws IOException {
+    Server(int port, ServerInterface serverInterface) throws IOException {
         super(serverInterface);
         newConnectionIds = new LinkedBlockingQueue<Long>();
         closedConnectionIds = new LinkedBlockingQueue<Long>();
@@ -30,9 +27,8 @@ public class Server extends AbstractEndpoint {
 
         try {
 
-            NewConnectionsListener newConnectionsListener = new NewConnectionsListener(port);
-
-            dataExchanger = new ServerDataExchanger(this);
+            ServerDataExchanger dataExchanger = new ServerDataExchanger();
+            NewConnectionsListener newConnectionsListener = new NewConnectionsListener(port, dataExchanger);
 
             executeTask(dataExchanger);
             executeTask(newConnectionsListener);
@@ -97,9 +93,11 @@ public class Server extends AbstractEndpoint {
 
     private final class NewConnectionsListener implements Runnable {
         private ServerSocketChannel serverSocketChannel;
+        private ServerDataExchanger serverDataExchanger;
 
-        NewConnectionsListener(int port) throws IOException {
+        NewConnectionsListener(int port, ServerDataExchanger dataExchanger) throws IOException {
             serverSocketChannel = ServerSocketChannel.open().bind(new InetSocketAddress(port));
+            serverDataExchanger = dataExchanger;
         }
 
         public void run() {
@@ -113,7 +111,7 @@ public class Server extends AbstractEndpoint {
                     //generate id for new connection
                     long connectionId = System.nanoTime();
                     //register channel to data exchanger
-                    SelectionKey key = dataExchanger.registerChannel(socketChannel);
+                    SelectionKey key = serverDataExchanger.registerChannel(socketChannel);
                     //create message parser instance using connection id and readyMessages queue
                     ServerMessageParser messageParser = new ServerMessageParser(getReadyMessages(), connectionId);
 
@@ -137,6 +135,19 @@ public class Server extends AbstractEndpoint {
                     //do nothing
                 }
             }
+        }
+    }
+
+
+    private final class ServerDataExchanger extends AbstractDataExchanger<ServerConnection>{
+
+        ServerDataExchanger() throws IOException {
+            super();
+        }
+
+        @Override
+        void closeConnection(ServerConnection connection) {
+
         }
     }
 }

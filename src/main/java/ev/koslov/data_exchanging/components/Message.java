@@ -118,24 +118,24 @@ public final class Message {
     /**
      * Sets message body
      *
-     * @param abstractMessageBody data to set
-     * @throws IOException if AbstractMessageBody implementation contains data, that could not be serialized.
+     * @param messageBody data to set
+     * @throws IOException if MessageBody implementation contains data, that could not be serialized.
      */
-    public void setBody(AbstractMessageBody abstractMessageBody) throws IOException {
-        if (abstractMessageBody != null) {
+    public void setBody(MessageBody messageBody) throws IOException {
+        if (messageBody != null) {
             try {
 
-                this.body =  SerializationUtils.serialize(abstractMessageBody);
+                this.body =  SerializationUtils.serialize(messageBody);
 
             } catch (IOException e) {
 
-                throw new IOException("Serialization of "+abstractMessageBody.getClass().getName()+" failed.", e);
+                throw new IOException("Serialization of "+ messageBody.getClass().getName()+" failed.", e);
 
             }
         }
     }
 
-    public <B extends AbstractMessageBody> B getBody() throws IOException {
+    public <B extends MessageBody> B getBody() throws IOException {
         if (!hasBody()) {
             return null;
         }

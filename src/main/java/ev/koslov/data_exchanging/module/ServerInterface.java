@@ -1,4 +1,4 @@
-package ev.koslov.data_exchanging.common;
+package ev.koslov.data_exchanging.module;
 
 
 import ev.koslov.data_exchanging.components.Message;
@@ -6,21 +6,19 @@ import ev.koslov.data_exchanging.components.RequestBody;
 import ev.koslov.data_exchanging.components.ResponseBody;
 import ev.koslov.data_exchanging.components.tags.MessageTypeTag;
 import ev.koslov.data_exchanging.exceptions.UnknownTargetException;
-import ev.koslov.data_exchanging.server.Server;
-import ev.koslov.data_exchanging.server.ServerConnection;
 
 import java.io.IOException;
 
 
-public abstract class AbstractServerInterface extends AbstractEndpointInterface<Server> {
+public abstract class ServerInterface extends AbstractEndpointInterface<Server> {
 
-    public void startServer(int port) throws IOException {
+    public Server startServer(int port) throws IOException {
         if (super.getAssociatedEndpoint() != null && super.getAssociatedEndpoint().isRunning()){
             throw new UnsupportedOperationException("Server is already running.");
         }
 
         //just creating server instance. It will be associated with current interface in constructor
-        new Server(port, this);
+        return new Server(port, this);
     }
 
     public boolean isServerRunning() {

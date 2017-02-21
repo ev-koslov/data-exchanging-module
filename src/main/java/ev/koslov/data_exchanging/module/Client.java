@@ -1,8 +1,5 @@
-package ev.koslov.data_exchanging.client;
+package ev.koslov.data_exchanging.module;
 
-
-import ev.koslov.data_exchanging.common.AbstractEndpoint;
-import ev.koslov.data_exchanging.common.AbstractClientInterface;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -10,15 +7,15 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 
-public class Client extends AbstractEndpoint {
+public final class Client extends AbstractEndpoint {
     private ClientConnection connection;
 
-    public Client(String host, int port, AbstractClientInterface clientInterface) throws IOException {
+    Client(String host, int port, ClientInterface clientInterface) throws IOException {
         super(clientInterface);
         try {
             SocketChannel channel = SocketChannel.open(new InetSocketAddress(host, port));
 
-            ClientDataExchanger dataExchanger = new ClientDataExchanger(this);
+            ClientDataExchanger dataExchanger = new ClientDataExchanger();
             SelectionKey key = dataExchanger.registerChannel(channel);
             ClientMessageParser messageParser = new ClientMessageParser(getReadyMessages());
 
@@ -48,6 +45,18 @@ public class Client extends AbstractEndpoint {
             connection.close();
         }
         super.shutdown();
+    }
+
+    private final class ClientDataExchanger extends AbstractDataExchanger<ClientConnection> {
+
+        ClientDataExchanger() throws IOException {
+            super();
+        }
+
+        @Override
+        void closeConnection(ClientConnection connection) {
+            Client.this.shutdown();
+        }
     }
 
 }

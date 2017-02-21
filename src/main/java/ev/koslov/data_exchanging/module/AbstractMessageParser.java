@@ -1,4 +1,4 @@
-package ev.koslov.data_exchanging.common;
+package ev.koslov.data_exchanging.module;
 
 
 import ev.koslov.data_exchanging.components.Message;
@@ -10,16 +10,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Implementation of this class are used for message parsing from
  */
-public abstract class AbstractMessageParser {
+abstract class AbstractMessageParser {
     private ByteBuffer parseBuffer;
     private final LinkedBlockingQueue<Message> readyMessages;
 
-    protected AbstractMessageParser(LinkedBlockingQueue<Message> readyMessages) {
+    AbstractMessageParser(LinkedBlockingQueue<Message> readyMessages) {
         parseBuffer = ByteBuffer.allocate(0);
         this.readyMessages = readyMessages;
     }
 
-    protected final void appendDataForParsing(ByteBuffer dataToAppend) throws ParseException {
+    final void appendDataForParsing(ByteBuffer dataToAppend) throws ParseException {
         if (parseBuffer.remaining()<dataToAppend.remaining()){
             expandBuffer(dataToAppend.remaining() - parseBuffer.remaining());
         }
@@ -44,7 +44,7 @@ public abstract class AbstractMessageParser {
 
     }
 
-    protected abstract Message prepareNewMessage(Message message);
+    abstract Message prepareNewMessage(Message message);
 
     //TODO: make external method to add message to message queue
 

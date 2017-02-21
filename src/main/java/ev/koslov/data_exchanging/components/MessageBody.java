@@ -5,10 +5,10 @@ import java.util.Properties;
 import java.util.Set;
 
 
-abstract class AbstractMessageBody implements Serializable {
+class MessageBody implements Serializable {
     private final Properties properties;
 
-    AbstractMessageBody() {
+    MessageBody() {
         this.properties = new Properties();
     }
 
