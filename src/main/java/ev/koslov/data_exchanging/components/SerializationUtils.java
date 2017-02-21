@@ -12,9 +12,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-/**
- * Created by voron on 21.02.2017.
- */
+
 public class SerializationUtils {
 
     public static String marshall(Object object) throws JAXBException {
@@ -51,17 +49,14 @@ public class SerializationUtils {
     }
 
     public static byte[] serialize(Serializable object) throws IOException {
-        ByteArrayOutputStream bos = null;
-        ZipOutputStream zos = null;
+        //TODO: add compression
+        ByteArrayOutputStream bos;
         ObjectOutputStream ous = null;
         try {
             bos = new ByteArrayOutputStream();
-            zos = new ZipOutputStream(bos);
-            ous = new ObjectOutputStream(zos);
+            ous = new ObjectOutputStream(bos);
 
-            zos.putNextEntry(new ZipEntry(object.getClass().getName()));
             ous.writeObject(object);
-            zos.closeEntry();
 
             return bos.toByteArray();
         } finally {
@@ -69,24 +64,20 @@ public class SerializationUtils {
                 try {
                     ous.close();
                 } catch (IOException e) {
-
+                    //do nothing
                 }
             }
         }
     }
 
     public static <T> T deserialize(byte[] serializedData) throws IOException {
-        ByteArrayInputStream bis = null;
-        ZipInputStream zis = null;
+        ByteArrayInputStream bis;
         ObjectInputStream ois = null;
         try {
             bis = new ByteArrayInputStream(serializedData);
-            zis = new ZipInputStream(bis);
-            ois = new ObjectInputStream(zis);
+            ois = new ObjectInputStream(bis);
 
-            zis.getNextEntry();
             Object deserializedObject = ois.readObject();
-            zis.closeEntry();
 
             return (T) deserializedObject;
 
@@ -99,6 +90,55 @@ public class SerializationUtils {
                 } catch (IOException e) {
                     //do nothing
                 }
+            }
+        }
+    }
+
+    public static byte[] compress(byte[] data) throws IOException {
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ZipOutputStream zos = new ZipOutputStream(bos);
+
+        try {
+            zos.putNextEntry(new ZipEntry(""));
+            zos.write(data);
+            zos.closeEntry();
+
+            return bos.toByteArray();
+        } finally {
+            try {
+                zos.close();
+            } catch (IOException e) {
+                //do nothing
+            }
+            try {
+                bos.close();
+            } catch (IOException e) {
+                //do nothing
+            }
+        }
+    }
+
+    public static byte[] decompress(byte[] data) throws IOException {
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        ZipInputStream zis = new ZipInputStream(bis);
+
+        try {
+            zis.getNextEntry();
+            byte[] decompressedData = new byte[zis.available()];
+            zis.read(decompressedData);
+            zis.closeEntry();
+            return decompressedData;
+        } finally {
+            try {
+                zis.close();
+            } catch (IOException e) {
+                //do nothing
+            }
+            try {
+                bis.close();
+            } catch (IOException e) {
+                //do nothing
             }
         }
     }

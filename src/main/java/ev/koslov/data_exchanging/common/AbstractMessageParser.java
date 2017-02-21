@@ -15,11 +15,14 @@ public abstract class AbstractMessageParser {
     private final LinkedBlockingQueue<Message> readyMessages;
 
     protected AbstractMessageParser(LinkedBlockingQueue<Message> readyMessages) {
-        parseBuffer = ByteBuffer.allocate(20000);
+        parseBuffer = ByteBuffer.allocate(0);
         this.readyMessages = readyMessages;
     }
 
     protected final void appendDataForParsing(ByteBuffer dataToAppend) throws ParseException {
+        if (parseBuffer.remaining()<dataToAppend.remaining()){
+            expandBuffer(dataToAppend.remaining() - parseBuffer.remaining());
+        }
 
         parseBuffer.put(dataToAppend);
 
@@ -36,6 +39,8 @@ public abstract class AbstractMessageParser {
             }
 
         } while (true);
+
+        trimBuffer();
 
     }
 

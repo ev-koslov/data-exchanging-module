@@ -2,7 +2,7 @@ package ev.koslov.data_exchanging.common;
 
 
 import ev.koslov.data_exchanging.components.Message;
-import ev.koslov.data_exchanging.components.ResponseMessageBody;
+import ev.koslov.data_exchanging.components.ResponseBody;
 import ev.koslov.data_exchanging.components.tags.MessageTypeTag;
 import ev.koslov.data_exchanging.components.tags.StatusTag;
 import ev.koslov.data_exchanging.exceptions.DeniedException;
@@ -176,7 +176,7 @@ abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
      * sends message to associated connection
      * @param messageToSend message to append to outboxing queue
      */
-    abstract void send(Message messageToSend);
+    abstract void send(Message messageToSend) throws IOException;
 
 
     //NEW METHODS!!!!!!!
@@ -186,11 +186,11 @@ abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
      * {@link AbstractEndpointInterface#send(Message)} and {@link AbstractEndpointInterface#waitResponse(Message, long)}
      * @param message message to append to outboxing queue
      * @param timeout operation timeout.
-     * @return result of message processing represented by ResponseMessageBody
+     * @return result of message processing represented by ResponseBody
      * @throws InterruptedException
      * @throws RequestException if no message had been received or received message with not {@link ev.koslov.data_exchanging.components.tags.StatusTag#OK} tag.
      */
-    final ResponseMessageBody request(Message message, long timeout) throws InterruptedException, IOException {
+    final ResponseBody request(Message message, long timeout) throws InterruptedException, IOException {
         registerRequest(message);
         send(message);
         Message responseBody = waitResponse(message, timeout);
@@ -198,7 +198,7 @@ abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
         return responseBody.getBody();
     }
 
-    public final void response(Message.Header requestHeader, StatusTag statusTag, ResponseMessageBody messageBody) throws IOException {
+    public final void response(Message.Header requestHeader, StatusTag statusTag, ResponseBody messageBody) throws IOException {
         Message responseMessage = new Message();
         Message.Header responseHeader = responseMessage.getHeader();
         switch (requestHeader.getMessageType()) {

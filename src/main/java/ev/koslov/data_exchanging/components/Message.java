@@ -129,7 +129,7 @@ public final class Message {
 
             } catch (IOException e) {
 
-                throw new IOException("Serialization of "+this.getClass().getName()+" failed.", e);
+                throw new IOException("Serialization of "+abstractMessageBody.getClass().getName()+" failed.", e);
 
             }
         }
