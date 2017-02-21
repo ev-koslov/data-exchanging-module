@@ -153,7 +153,7 @@ public final class Message {
      * @return {@link ByteBuffer} that contains message in raw format.
      */
     public final ByteBuffer getAsReadReadyByteBuffer() {
-        ByteBuffer buffer = ByteBuffer.allocate(MESSAGE_META_LENGTH + body.length);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(MESSAGE_META_LENGTH + body.length);
         buffer.put(MESSAGE_HEADER_BYTES);
         buffer.putInt(header.messageType);
         buffer.putInt(header.status);
