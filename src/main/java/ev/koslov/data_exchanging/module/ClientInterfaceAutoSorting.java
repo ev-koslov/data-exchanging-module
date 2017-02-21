@@ -15,7 +15,7 @@ public class ClientInterfaceAutoSorting extends ClientInterface {
         this.requestProcessors = new ArrayList<AbstractClientRequestProcessor>();
     }
 
-    final void sortAndProcess(Message message) throws IOException {
+    protected final void sortAndProcess(Message message) throws IOException {
         Message.Header header = message.getHeader();
         RequestBody body = message.getBody();
 
@@ -24,11 +24,6 @@ public class ClientInterfaceAutoSorting extends ClientInterface {
                 requestProcessor.process(header, body);
             }
         }
-    }
-
-    public void addRequestProcessor (AbstractClientRequestProcessor requestProcessor) {
-        requestProcessor.setAssociatedClient(this);
-        requestProcessors.add(requestProcessor);
     }
 
     @Override
@@ -47,5 +42,10 @@ public class ClientInterfaceAutoSorting extends ClientInterface {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void addRequestProcessor (AbstractClientRequestProcessor requestProcessor) {
+        requestProcessor.setAssociatedClient(this);
+        requestProcessors.add(requestProcessor);
     }
 }
