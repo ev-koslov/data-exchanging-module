@@ -3,9 +3,7 @@ package ev.koslov.data_exchanging.components;
 import ev.koslov.data_exchanging.components.tags.MessageTypeTag;
 import ev.koslov.data_exchanging.components.tags.StatusTag;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -83,7 +81,7 @@ public final class Message {
                 if (dataSize > 0) {
                     byte[] body = new byte[dataSize];
                     rawBuffer.get(body);
-                    parsedMessage.serializedBody = body;
+                    parsedMessage.body = body;
                 }
 
             } else {
@@ -102,11 +100,11 @@ public final class Message {
 
 
     private final Header header;
-    private byte[] serializedBody;
+    private byte[] body;
 
     public Message() {
         header = new Header();
-        serializedBody = new byte[0];
+        body = new byte[0];
     }
 
     public Header getHeader() {
@@ -114,7 +112,7 @@ public final class Message {
     }
 
     public boolean hasBody() {
-        return serializedBody.length > 0;
+        return body.length > 0;
     }
 
     /**
@@ -123,53 +121,29 @@ public final class Message {
      * @param abstractMessageBody data to set
      * @throws IOException if AbstractMessageBody implementation contains data, that could not be serialized.
      */
-    public void setBody(AbstractMessageBody abstractMessageBody) {
+    public void setBody(AbstractMessageBody abstractMessageBody) throws IOException {
         if (abstractMessageBody != null) {
-            this.serializedBody = abstractMessageBody.getBytes();
+            try {
+
+                this.body =  SerializationUtils.serialize(abstractMessageBody);
+
+            } catch (IOException e) {
+
+                throw new IOException("Serialization of "+this.getClass().getName()+" failed.", e);
+
+            }
         }
     }
 
-    public <B extends AbstractMessageBody> B deserializeBody() {
-
-        if (serializedBody.length == 0) {
+    public <B extends AbstractMessageBody> B getBody() throws IOException {
+        if (!hasBody()) {
             return null;
         }
 
-        ByteArrayInputStream bis = null;
-        ObjectInputStream ois = null;
-
         try {
-
-            bis = new ByteArrayInputStream(serializedBody);
-            ois = new ObjectInputStream(bis);
-
-            return (B) ois.readObject();
-
-        } catch (ClassNotFoundException e) {
-
-            throw new RuntimeException("This class cannon be deserialized here.", e);
-
+            return SerializationUtils.deserialize(body);
         } catch (IOException e) {
-
-            throw new RuntimeException("This class cannon be deserialized here.", e);
-
-        } finally {
-
-            if (ois != null) {
-                try {
-                    ois.close();
-                } catch (IOException e) {
-                    //do nothing
-                }
-            }
-
-            if (bis != null) {
-                try {
-                    bis.close();
-                } catch (IOException e) {
-                    //do nothing
-                }
-            }
+            throw new IOException("This class cannon be deserialized.", e);
         }
     }
 
@@ -179,7 +153,7 @@ public final class Message {
      * @return {@link ByteBuffer} that contains message in raw format.
      */
     public final ByteBuffer getAsReadReadyByteBuffer() {
-        ByteBuffer buffer = ByteBuffer.allocate(MESSAGE_META_LENGTH + serializedBody.length);
+        ByteBuffer buffer = ByteBuffer.allocate(MESSAGE_META_LENGTH + body.length);
         buffer.put(MESSAGE_HEADER_BYTES);
         buffer.putInt(header.messageType);
         buffer.putInt(header.status);
@@ -187,8 +161,8 @@ public final class Message {
         buffer.putLong(header.sourceId);
         buffer.putLong(header.requestId);
         buffer.putLong(header.responseForRequestId);
-        buffer.putInt(serializedBody.length);
-        buffer.put(serializedBody);
+        buffer.putInt(body.length);
+        buffer.put(body);
         buffer.flip();
         return buffer;
     }

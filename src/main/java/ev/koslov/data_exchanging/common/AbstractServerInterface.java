@@ -5,7 +5,6 @@ import ev.koslov.data_exchanging.components.Message;
 import ev.koslov.data_exchanging.components.RequestMessageBody;
 import ev.koslov.data_exchanging.components.ResponseMessageBody;
 import ev.koslov.data_exchanging.components.tags.MessageTypeTag;
-import ev.koslov.data_exchanging.exceptions.RequestException;
 import ev.koslov.data_exchanging.server.Server;
 import ev.koslov.data_exchanging.server.ServerConnection;
 
@@ -66,7 +65,7 @@ public abstract class AbstractServerInterface extends AbstractEndpointInterface<
         }
     }
 
-    public void serverToClientRequest(long targetId, RequestMessageBody requestMessageBody) {
+    public void serverToClientRequest(long targetId, RequestMessageBody requestMessageBody) throws IOException {
         Message message = new Message();
         message.getHeader().setMessageType(MessageTypeTag.SERVER_TO_CLIENT_REQUEST);
         message.getHeader().setTargetId(targetId);
@@ -74,7 +73,7 @@ public abstract class AbstractServerInterface extends AbstractEndpointInterface<
         send(message);
     }
 
-    public ResponseMessageBody serverToClientRequest(long targetId, RequestMessageBody requestMessageBody, long timeout) throws InterruptedException, RequestException {
+    public ResponseMessageBody serverToClientRequest(long targetId, RequestMessageBody requestMessageBody, long timeout) throws InterruptedException, IOException {
         Message message = new Message();
         message.getHeader().setMessageType(MessageTypeTag.SERVER_TO_CLIENT_REQUEST);
         message.getHeader().setTargetId(targetId);

@@ -1,6 +1,8 @@
 package ev.koslov.data_exchanging.exceptions;
 
-public class RequestException extends Exception {
+import java.io.IOException;
+
+public class RequestException extends IOException {
     public RequestException(String message) {
         super(message);
     }

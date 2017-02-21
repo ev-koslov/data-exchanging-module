@@ -65,7 +65,7 @@ public class SerializationUtils {
 
             return bos.toByteArray();
         } finally {
-            if (ous != null){
+            if (ous != null) {
                 try {
                     ous.close();
                 } catch (IOException e) {
@@ -75,7 +75,7 @@ public class SerializationUtils {
         }
     }
 
-    public static <T> T deserialize(byte[] serializedData, Class<T> expectedClass) throws IOException {
+    public static <T> T deserialize(byte[] serializedData) throws IOException {
         ByteArrayInputStream bis = null;
         ZipInputStream zis = null;
         ObjectInputStream ois = null;
@@ -88,16 +88,12 @@ public class SerializationUtils {
             Object deserializedObject = ois.readObject();
             zis.closeEntry();
 
-            if (deserializedObject.getClass().isAssignableFrom(expectedClass)){
-                return expectedClass.cast(deserializedObject);
-            } else {
-                throw new ClassNotFoundException("Wrong expected class");
-            }
+            return (T) deserializedObject;
 
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         } finally {
-            if (ois != null){
+            if (ois != null) {
                 try {
                     ois.close();
                 } catch (IOException e) {

@@ -6,7 +6,6 @@ import ev.koslov.data_exchanging.components.Message;
 import ev.koslov.data_exchanging.components.RequestMessageBody;
 import ev.koslov.data_exchanging.components.ResponseMessageBody;
 import ev.koslov.data_exchanging.components.tags.MessageTypeTag;
-import ev.koslov.data_exchanging.exceptions.RequestException;
 
 import java.io.IOException;
 
@@ -62,14 +61,14 @@ public abstract class AbstractClientInterface extends AbstractEndpointInterface<
         getAssociatedEndpoint().getConnection().sendMessage(messageToSend);
     }
 
-    public void clientToServerRequest(RequestMessageBody requestMessageBody) {
+    public void clientToServerRequest(RequestMessageBody requestMessageBody) throws IOException {
         Message message = new Message();
         message.getHeader().setMessageType(MessageTypeTag.CLIENT_TO_SERVER_REQUEST);
         message.setBody(requestMessageBody);
         send(message);
     }
 
-    public void clientToClientRequest(long targetId, RequestMessageBody requestMessageBody) {
+    public void clientToClientRequest(long targetId, RequestMessageBody requestMessageBody) throws IOException {
         Message message = new Message();
         message.getHeader().setMessageType(MessageTypeTag.CLIENT_TO_CLIENT_REQUEST);
         message.getHeader().setTargetId(targetId);
@@ -77,14 +76,14 @@ public abstract class AbstractClientInterface extends AbstractEndpointInterface<
         send(message);
     }
 
-    public ResponseMessageBody clientToServerRequest(RequestMessageBody requestMessageBody, long timeout) throws RequestException, InterruptedException {
+    public ResponseMessageBody clientToServerRequest(RequestMessageBody requestMessageBody, long timeout) throws IOException, InterruptedException {
         Message message = new Message();
         message.getHeader().setMessageType(MessageTypeTag.CLIENT_TO_SERVER_REQUEST);
         message.setBody(requestMessageBody);
         return request(message, timeout);
     }
 
-    public ResponseMessageBody clientToClientRequest(long targetId, RequestMessageBody requestMessageBody, long timeout) throws InterruptedException, RequestException {
+    public ResponseMessageBody clientToClientRequest(long targetId, RequestMessageBody requestMessageBody, long timeout) throws InterruptedException, IOException {
         Message message = new Message();
         message.getHeader().setMessageType(MessageTypeTag.CLIENT_TO_CLIENT_REQUEST);
         message.getHeader().setTargetId(targetId);
