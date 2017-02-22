@@ -14,6 +14,10 @@ abstract class AbstractMessageParser {
     private ByteBuffer parseBuffer;
     private final LinkedBlockingQueue<Message> readyMessages;
 
+    //TODO: добавить возможность создавать "частичные" сообщения. Например, вычитали хидер и отдали его методу accept
+    //TODO: если метод вернул истину, то создали сообщение с буфером == обьему ожидаемого контента. Таким образом
+    //TODO: мы сможем передавать сообщения дальше, не дожидаясь его полной загрузки.
+
     AbstractMessageParser(LinkedBlockingQueue<Message> readyMessages) {
         parseBuffer = ByteBuffer.allocate(0);
         this.readyMessages = readyMessages;
