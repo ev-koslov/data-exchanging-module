@@ -14,4 +14,8 @@ public abstract class AbstractClientRequestProcessor<T extends Enum<T>, I extend
     final void setAssociatedClient(I clientInterface){
         this.clientInterface = clientInterface;
     }
+
+    protected final I getAssociatedClient(){
+        return clientInterface;
+    }
 }
