@@ -119,13 +119,16 @@ public class SerializationUtils {
     public static byte[] decompress(byte[] data) throws IOException {
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
         ZipInputStream zis = new ZipInputStream(bis);
-
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int length;
         try {
             zis.getNextEntry();
-            byte[] decompressedData = new byte[zis.available()];
-            zis.read(decompressedData);
+            while ((length = zis.read(buffer, 0, buffer.length)) > 0) {
+                bos.write(buffer, 0, length);
+            }
             zis.closeEntry();
-            return decompressedData;
+            return bos.toByteArray();
         } finally {
             try {
                 zis.close();
@@ -134,6 +137,11 @@ public class SerializationUtils {
             }
             try {
                 bis.close();
+            } catch (IOException e) {
+                //do nothing
+            }
+            try {
+                bos.close();
             } catch (IOException e) {
                 //do nothing
             }
