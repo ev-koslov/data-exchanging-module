@@ -34,8 +34,8 @@ public abstract class ClientInterface extends AbstractEndpointInterface<Client> 
     final boolean isResponse(Message responseMessage) {
         MessageTypeTag messageTypeTag = responseMessage.getHeader().getMessageType();
 
-        return messageTypeTag.equals(MessageTypeTag.CLIENT_TO_CLIENT_RESPONSE) ||
-                messageTypeTag.equals(MessageTypeTag.SERVER_TO_CLIENT_RESPONSE);
+        return messageTypeTag == MessageTypeTag.CLIENT_TO_CLIENT_RESPONSE ||
+                messageTypeTag == MessageTypeTag.SERVER_TO_CLIENT_RESPONSE;
     }
 
     @Override

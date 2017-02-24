@@ -35,7 +35,7 @@ public abstract class ServerInterface extends AbstractEndpointInterface<Server> 
 
     @Override
     final boolean isResponse(Message responseMessage) {
-        return responseMessage.getHeader().getMessageType().equals(MessageTypeTag.CLIENT_TO_SERVER_RESPONSE);
+        return responseMessage.getHeader().getMessageType() == MessageTypeTag.CLIENT_TO_SERVER_RESPONSE;
     }
 
     @Override

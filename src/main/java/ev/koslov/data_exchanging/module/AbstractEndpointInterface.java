@@ -171,6 +171,19 @@ abstract class AbstractEndpointInterface<E extends AbstractEndpoint> {
         send(responseMessage);
     }
 
+    public final void response(Message.Header requestHeader, StatusTag status, String message) throws IOException {
+        Message responseMessage = new Message();
+
+        fillMessageHeader(requestHeader, responseMessage.getHeader(), status);
+
+        ResponseBody responseBody = new ResponseBody();
+        responseBody.setProperty("message", message);
+
+        responseMessage.setBody(responseBody);
+
+        send(responseMessage);
+    }
+
     public final void response(Message.Header requestHeader, ResponseBody messageBody) throws IOException {
         Message responseMessage = new Message();
 

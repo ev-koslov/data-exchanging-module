@@ -79,14 +79,19 @@ abstract class AbstractEndpoint {
                     try {
 
                         //getting next parsed message from endpoint
-                        Message message = AbstractEndpoint.this.getNextReadyMessage();
+                        final Message message = AbstractEndpoint.this.getNextReadyMessage();
 
                         //TODO: perform processing of each message in separate thread. Maybe it is not a good idea?
-                        if (endpointInterface.isResponse(message)) {
-                            endpointInterface.processResponse(message);
-                        } else {
-                            endpointInterface.processRequest(message);
-                        }
+
+                        executeTask(new Runnable() {
+                            public void run() {
+                                if (endpointInterface.isResponse(message)) {
+                                    endpointInterface.processResponse(message);
+                                } else {
+                                    endpointInterface.processRequest(message);
+                                }
+                            }
+                        });
 
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
